@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File,
 from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, or_
+from sqlalchemy.orm import selectinload
 from pathlib import Path
 from typing import Optional
 from app.core.database import get_db
@@ -37,7 +38,7 @@ async def list_recursos(
     size: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
 ):
-    stmt = select(Recurso)
+    stmt = select(Recurso).options(selectinload(Recurso.categoria))
 
     if q:
         pattern = f"%{q}%"
@@ -64,7 +65,8 @@ async def list_recursos(
 @router.get("/recientes", response_model=list[RecursoListResponse])
 async def get_recientes(limit: int = Query(12, ge=1, le=50), db: AsyncSession = Depends(get_db)):
     result = await db.execute(
-        select(Recurso).order_by(Recurso.fecha_agregado.desc()).limit(limit)
+        select(Recurso).options(selectinload(Recurso.categoria))
+        .order_by(Recurso.fecha_agregado.desc()).limit(limit)
     )
     return [_to_list_response(r) for r in result.scalars().all()]
 
@@ -72,14 +74,18 @@ async def get_recientes(limit: int = Query(12, ge=1, le=50), db: AsyncSession = 
 @router.get("/populares", response_model=list[RecursoListResponse])
 async def get_populares(limit: int = Query(12, ge=1, le=50), db: AsyncSession = Depends(get_db)):
     result = await db.execute(
-        select(Recurso).order_by(Recurso.vistas.desc()).limit(limit)
+        select(Recurso).options(selectinload(Recurso.categoria))
+        .order_by(Recurso.vistas.desc()).limit(limit)
     )
     return [_to_list_response(r) for r in result.scalars().all()]
 
 
 @router.get("/{recurso_id}", response_model=RecursoResponse)
 async def get_recurso(recurso_id: int, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Recurso).where(Recurso.id_recurso == recurso_id))
+    result = await db.execute(
+        select(Recurso).options(selectinload(Recurso.categoria))
+        .where(Recurso.id_recurso == recurso_id)
+    )
     recurso = result.scalar_one_or_none()
     if not recurso:
         raise HTTPException(status_code=404, detail="Recurso no encontrado")
