@@ -12,7 +12,8 @@
       "Bash(sshpass *)",
       "Bash(git add *)",
       "Bash(git push *)",
-      "Bash(git commit -m 'fix: add pydantic[email] dependency for EmailStr validation *)"
+      "Bash(git commit -m 'fix: add pydantic[email] dependency for EmailStr validation *)",
+      "Bash(git commit -m 'fix: make Firebase init graceful — app starts without valid service account *)"
     ]
   }
 }
