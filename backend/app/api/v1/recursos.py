@@ -7,9 +7,8 @@ from typing import Optional
 from app.core.database import get_db
 from app.core.config import get_settings
 from app.models.recurso import Recurso
-from app.models.categoria import Categoria
 from app.schemas.recurso import RecursoResponse, RecursoListResponse, PaginatedRecursos
-from app.api.deps import get_current_admin, get_optional_user
+from app.api.deps import get_current_admin
 from app.services.storage import save_upload, delete_file, ALLOWED_PDF_MIME, ALLOWED_IMAGE_MIME
 from app.models.user import User
 

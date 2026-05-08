@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from app.core.database import get_db
 from app.core.firebase import verify_firebase_token, set_admin_claim
 from app.models.user import User, UserRole
-from app.schemas.user import UserCreate, UserResponse, UserUpdate
+from app.schemas.user import UserResponse, UserUpdate
 from app.api.deps import get_current_user, get_current_admin
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 

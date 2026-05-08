@@ -14,7 +14,12 @@
       "Bash(git push *)",
       "Bash(git commit -m 'fix: add pydantic[email] dependency for EmailStr validation *)",
       "Bash(git commit -m 'fix: make Firebase init graceful — app starts without valid service account *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(curl -sf https://biblioteca-161-97-92-90.sslip.io/health)",
+      "Bash(curl -k https://biblioteca-161-97-92-90.sslip.io/health)",
+      "Bash(gh run *)",
+      "Bash(pip install *)",
+      "Bash(ruff check *)"
     ]
   }
 }
