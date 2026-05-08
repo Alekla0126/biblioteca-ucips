@@ -33,8 +33,8 @@ export default function Home() {
           api.get<Categoria[]>("/categorias/"),
           api.get<RecursoListItem[]>("/recursos/recientes?limit=8"),
         ]);
-        setCategorias(catsRes.data);
-        setRecientes(recRes.data);
+        setCategorias(Array.isArray(catsRes.data) ? catsRes.data : []);
+        setRecientes(Array.isArray(recRes.data) ? recRes.data : []);
       } catch {
         toast.error("Error al cargar los datos");
       } finally {
@@ -53,7 +53,7 @@ export default function Home() {
             Biblioteca Virtual <span className="text-ucips-gold">UCIPS</span>
           </h1>
           <p className="text-blue-200 text-lg mb-8">
-            Accede a más de {categorias.reduce((s, c) => s + c.total_recursos, 0)} recursos académicos en ciencias policiales y seguridad
+            Accede a más de {Array.isArray(categorias) ? categorias.reduce((s, c) => s + c.total_recursos, 0) : 0} recursos académicos en ciencias policiales y seguridad
           </p>
           <Link
             to="/recursos"
@@ -68,7 +68,7 @@ export default function Home() {
       <section className="bg-ucips-blue py-8">
         <div className="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-center text-white">
           <div>
-            <p className="text-3xl font-bold text-ucips-gold">{categorias.reduce((s, c) => s + c.total_recursos, 0)}</p>
+            <p className="text-3xl font-bold text-ucips-gold">{Array.isArray(categorias) ? categorias.reduce((s, c) => s + c.total_recursos, 0) : 0}</p>
             <p className="text-sm text-blue-200">Recursos</p>
           </div>
           <div>

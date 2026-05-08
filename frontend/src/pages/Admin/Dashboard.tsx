@@ -27,7 +27,7 @@ export default function AdminDashboard() {
   const fetchRecursos = async () => {
     try {
       const res = await api.get<{ items: Recurso[] }>("/recursos/?size=100");
-      setRecursos(res.data.items);
+      setRecursos(Array.isArray(res.data?.items) ? res.data.items : []);
     } catch {
       toast.error("Error al cargar recursos");
     }
@@ -36,7 +36,7 @@ export default function AdminDashboard() {
   const fetchCategorias = async () => {
     try {
       const res = await api.get<Categoria[]>("/categorias/");
-      setCategorias(res.data);
+      setCategorias(Array.isArray(res.data) ? res.data : []);
     } catch {
       toast.error("Error al cargar categorías");
     }

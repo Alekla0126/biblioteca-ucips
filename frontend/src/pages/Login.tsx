@@ -33,10 +33,18 @@ export default function Login() {
       navigate(from, { replace: true });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Error al iniciar sesión";
-      if (msg.includes("invalid-credential") || msg.includes("wrong-password")) {
+      if (
+        msg.includes("configuration-not-found") ||
+        msg.includes("CONFIGURATION_NOT_FOUND") ||
+        msg.includes("getProjectConfig")
+      ) {
+        toast.error("El sistema de autenticación está siendo configurado. Intente más tarde.");
+      } else if (msg.includes("invalid-credential") || msg.includes("wrong-password") || msg.includes("INVALID_LOGIN_CREDENTIALS")) {
         toast.error("Correo o contraseña incorrectos");
       } else if (msg.includes("too-many-requests")) {
         toast.error("Demasiados intentos. Intente más tarde.");
+      } else if (msg.includes("network-request-failed")) {
+        toast.error("Error de conexión. Verifique su red.");
       } else {
         toast.error("Error al iniciar sesión");
       }
