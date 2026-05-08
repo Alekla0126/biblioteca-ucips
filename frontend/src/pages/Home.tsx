@@ -127,7 +127,7 @@ export default function Home() {
               <div className="h-40 bg-ucips-navy flex items-center justify-center overflow-hidden">
                 {r.ruta_portada ? (
                   <img
-                    src={`${import.meta.env.VITE_API_URL}/uploads/portadas/${r.ruta_portada}`}
+                    src={`/uploads/portadas/${r.ruta_portada}`}
                     alt={r.titulo}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                     loading="lazy"

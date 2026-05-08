@@ -70,7 +70,7 @@ export default function Recursos() {
               <div key={i} className="bg-gray-200 animate-pulse h-64 rounded-xl" />
             ))}
           </div>
-        ) : !data || data.items.length === 0 ? (
+        ) : !data || !data.items || data.items.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-4xl mb-4">📭</p>
             <p className="text-gray-500 text-lg">No se encontraron recursos</p>
@@ -88,7 +88,7 @@ export default function Recursos() {
                   <div className="h-44 bg-ucips-navy flex items-center justify-center overflow-hidden">
                     {r.ruta_portada ? (
                       <img
-                        src={`${import.meta.env.VITE_API_URL}/uploads/portadas/${r.ruta_portada}`}
+                        src={`/uploads/portadas/${r.ruta_portada}`}
                         alt={r.titulo}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                         loading="lazy"

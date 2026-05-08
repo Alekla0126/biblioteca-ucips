@@ -51,7 +51,7 @@ export default function RecursoDetail() {
     localStorage.setItem(storageKey, String(newPage));
   };
 
-  const pdfUrl = `${import.meta.env.VITE_API_URL}/api/v1/recursos/${id}/pdf`;
+  const pdfUrl = `/api/v1/recursos/${id}/pdf`;
 
   if (loading) {
     return (
