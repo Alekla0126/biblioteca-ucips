@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from datetime import datetime, timezone
+from typing import List
 from app.core.database import get_db
 from app.core.firebase import verify_firebase_token, set_admin_claim
 from app.models.user import User, UserRole
@@ -83,6 +84,15 @@ async def update_me(
     if data.display_name is not None:
         current_user.display_name = data.display_name
     return current_user
+
+
+@router.get("/users", response_model=List[UserResponse])
+async def list_users(
+    _admin: User = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(User).order_by(User.created_at.desc()))
+    return result.scalars().all()
 
 
 @router.patch("/users/{uid}/role", response_model=UserResponse)

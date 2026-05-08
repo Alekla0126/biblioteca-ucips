@@ -28,11 +28,15 @@ export function useAuthInit() {
 
 export function useAuth() {
   const { firebaseUser, appUser, loading } = useAuthStore();
+  const isAdmin = appUser?.role === "admin";
+  const isProfesor = appUser?.role === "profesor";
   return {
     firebaseUser,
     appUser,
     loading,
-    isAdmin: appUser?.role === "admin",
+    isAdmin,
+    isProfesor,
+    canUpload: isAdmin || isProfesor,
     isAuthenticated: !!firebaseUser,
   };
 }

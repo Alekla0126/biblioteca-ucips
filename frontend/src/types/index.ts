@@ -42,7 +42,7 @@ export interface AppUser {
   uid: string;
   email: string;
   display_name?: string;
-  role: "admin" | "user";
+  role: "admin" | "profesor" | "user";
   is_active: boolean;
   created_at: string;
 }

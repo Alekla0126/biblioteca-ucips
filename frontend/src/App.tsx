@@ -9,12 +9,21 @@ import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import ForgotPassword from "@/pages/ForgotPassword";
 import AdminDashboard from "@/pages/Admin/Dashboard";
+import Subir from "@/pages/Subir";
 
 function ProtectedAdmin({ children }: { children: React.ReactNode }) {
   const { isAdmin, loading, isAuthenticated } = useAuth();
   if (loading) return null;
   if (!isAuthenticated) return <Navigate to="/login" state={{ from: "/admin" }} replace />;
   if (!isAdmin) return <Navigate to="/" replace />;
+  return <>{children}</>;
+}
+
+function ProtectedUploader({ children }: { children: React.ReactNode }) {
+  const { canUpload, loading, isAuthenticated } = useAuth();
+  if (loading) return null;
+  if (!isAuthenticated) return <Navigate to="/login" state={{ from: "/subir" }} replace />;
+  if (!canUpload) return <Navigate to="/" replace />;
   return <>{children}</>;
 }
 
@@ -36,6 +45,14 @@ function AppRoutes() {
                 <Route path="/" element={<Home />} />
                 <Route path="/recursos" element={<Recursos />} />
                 <Route path="/recursos/:id" element={<RecursoDetail />} />
+                <Route
+                  path="/subir"
+                  element={
+                    <ProtectedUploader>
+                      <Subir />
+                    </ProtectedUploader>
+                  }
+                />
                 <Route
                   path="/admin"
                   element={

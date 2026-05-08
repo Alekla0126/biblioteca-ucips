@@ -6,13 +6,14 @@ import enum
 
 class UserRole(str, enum.Enum):
     admin = "admin"
+    profesor = "profesor"
     user = "user"
 
 
 class User(Base):
     __tablename__ = "users"
 
-    uid = Column(String(128), primary_key=True)  # Firebase UID
+    uid = Column(String(128), primary_key=True)
     email = Column(String(255), unique=True, nullable=False, index=True)
     display_name = Column(String(255), nullable=True)
     role = Column(Enum(UserRole), default=UserRole.user, nullable=False)

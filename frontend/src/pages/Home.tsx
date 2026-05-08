@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "@/lib/api";
 import type { Categoria, RecursoListItem } from "@/types";
+import ResourceCard from "@/components/ResourceCard";
 import toast from "react-hot-toast";
 
 const ICONS: Record<string, string> = {
@@ -119,29 +120,7 @@ export default function Home() {
         <h2 className="text-2xl font-bold text-gray-800 mb-6">Agregados recientemente</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {recientes.map((r) => (
-            <Link
-              key={r.id_recurso}
-              to={`/recursos/${r.id_recurso}`}
-              className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-1 transition-all group"
-            >
-              <div className="h-40 bg-ucips-navy flex items-center justify-center overflow-hidden">
-                {r.ruta_portada ? (
-                  <img
-                    src={`/uploads/portadas/${r.ruta_portada}`}
-                    alt={r.titulo}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                    loading="lazy"
-                  />
-                ) : (
-                  <span className="text-5xl">📖</span>
-                )}
-              </div>
-              <div className="p-3">
-                <p className="font-semibold text-sm text-gray-800 line-clamp-2">{r.titulo}</p>
-                <p className="text-xs text-gray-500 mt-1">{r.autor}</p>
-                <p className="text-xs text-gray-400">{r.anio}</p>
-              </div>
-            </Link>
+            <ResourceCard key={r.id_recurso} recurso={r} />
           ))}
         </div>
       </section>

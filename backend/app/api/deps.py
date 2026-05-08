@@ -50,6 +50,18 @@ async def get_current_admin(
     return current_user
 
 
+async def get_current_uploader(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    """Admin or Profesor can upload/edit resources."""
+    if current_user.role not in (UserRole.admin, UserRole.profesor):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Se requieren permisos de profesor o administrador para subir recursos",
+        )
+    return current_user
+
+
 async def get_optional_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(HTTPBearer(auto_error=False)),
     db: AsyncSession = Depends(get_db),

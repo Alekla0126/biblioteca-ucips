@@ -2,10 +2,22 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import api from "@/lib/api";
-import type { Recurso, Categoria } from "@/types";
+import type { Recurso, Categoria, AppUser } from "@/types";
 import toast from "react-hot-toast";
 
-type Tab = "recursos" | "categorias" | "upload";
+type Tab = "recursos" | "categorias" | "usuarios";
+
+const ROLE_LABELS: Record<string, string> = {
+  admin: "Admin",
+  profesor: "Profesor",
+  user: "Usuario",
+};
+
+const ROLE_COLORS: Record<string, string> = {
+  admin: "bg-purple-100 text-purple-700",
+  profesor: "bg-blue-100 text-blue-700",
+  user: "bg-gray-100 text-gray-600",
+};
 
 export default function AdminDashboard() {
   const { isAdmin, loading } = useAuth();
@@ -13,7 +25,8 @@ export default function AdminDashboard() {
   const [tab, setTab] = useState<Tab>("recursos");
   const [recursos, setRecursos] = useState<Recurso[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
-  const [submitting, setSubmitting] = useState(false);
+  const [usuarios, setUsuarios] = useState<AppUser[]>([]);
+  const [generatingThumbs, setGeneratingThumbs] = useState(false);
 
   useEffect(() => {
     if (!loading && !isAdmin) navigate("/", { replace: true });
@@ -23,6 +36,10 @@ export default function AdminDashboard() {
     fetchRecursos();
     fetchCategorias();
   }, []);
+
+  useEffect(() => {
+    if (tab === "usuarios" && usuarios.length === 0) fetchUsuarios();
+  }, [tab]);
 
   const fetchRecursos = async () => {
     try {
@@ -39,6 +56,15 @@ export default function AdminDashboard() {
       setCategorias(Array.isArray(res.data) ? res.data : []);
     } catch {
       toast.error("Error al cargar categorías");
+    }
+  };
+
+  const fetchUsuarios = async () => {
+    try {
+      const res = await api.get<AppUser[]>("auth/users");
+      setUsuarios(Array.isArray(res.data) ? res.data : []);
+    } catch {
+      toast.error("Error al cargar usuarios");
     }
   };
 
@@ -64,26 +90,6 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setSubmitting(true);
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-    try {
-      await api.post("recursos/", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      toast.success("Recurso subido exitosamente");
-      form.reset();
-      fetchRecursos();
-      setTab("recursos");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Error al subir");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   const handleCreateCategoria = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
@@ -95,6 +101,41 @@ export default function AdminDashboard() {
       form.reset();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Error al crear categoría");
+    }
+  };
+
+  const handleRoleChange = async (uid: string, newRole: string) => {
+    try {
+      const res = await api.patch<AppUser>(`auth/users/${uid}/role`, { role: newRole });
+      setUsuarios((prev) => prev.map((u) => (u.uid === uid ? res.data : u)));
+      toast.success("Rol actualizado");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Error al cambiar rol");
+    }
+  };
+
+  const handleToggleActive = async (uid: string, current: boolean) => {
+    try {
+      const res = await api.patch<AppUser>(`auth/users/${uid}/role`, { is_active: !current });
+      setUsuarios((prev) => prev.map((u) => (u.uid === uid ? res.data : u)));
+      toast.success(current ? "Cuenta desactivada" : "Cuenta activada");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Error");
+    }
+  };
+
+  const handleGenerateThumbnails = async () => {
+    setGeneratingThumbs(true);
+    try {
+      const res = await api.post<{ generated: number; total_sin_portada: number }>(
+        "recursos/generate-thumbnails"
+      );
+      toast.success(`Generadas ${res.data.generated} portadas de ${res.data.total_sin_portada} recursos sin portada`);
+      fetchRecursos();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Error");
+    } finally {
+      setGeneratingThumbs(false);
     }
   };
 
@@ -112,7 +153,7 @@ export default function AdminDashboard() {
       {/* Tabs */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 flex gap-1">
-          {(["recursos", "categorias", "upload"] as Tab[]).map((t) => (
+          {(["recursos", "categorias", "usuarios"] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -122,7 +163,7 @@ export default function AdminDashboard() {
                   : "border-transparent text-gray-500 hover:text-gray-700"
               }`}
             >
-              {t === "upload" ? "Subir recurso" : t.charAt(0).toUpperCase() + t.slice(1)}
+              {t.charAt(0).toUpperCase() + t.slice(1)}
             </button>
           ))}
         </div>
@@ -132,14 +173,23 @@ export default function AdminDashboard() {
         {/* Recursos Tab */}
         {tab === "recursos" && (
           <div>
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
               <h2 className="text-lg font-bold text-gray-800">Recursos ({recursos.length})</h2>
-              <button
-                onClick={() => setTab("upload")}
-                className="bg-ucips-blue text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-800 transition"
-              >
-                + Subir nuevo
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleGenerateThumbnails}
+                  disabled={generatingThumbs}
+                  className="bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-800 disabled:opacity-50 transition"
+                >
+                  {generatingThumbs ? "Generando..." : "🖼 Generar portadas"}
+                </button>
+                <a
+                  href="/subir"
+                  className="bg-ucips-blue text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-800 transition"
+                >
+                  + Subir nuevo
+                </a>
+              </div>
             </div>
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
@@ -151,6 +201,7 @@ export default function AdminDashboard() {
                       <th className="px-4 py-3 text-left">Autor</th>
                       <th className="px-4 py-3 text-left">Año</th>
                       <th className="px-4 py-3 text-left">Vistas</th>
+                      <th className="px-4 py-3 text-left">Portada</th>
                       <th className="px-4 py-3 text-left">Acciones</th>
                     </tr>
                   </thead>
@@ -162,6 +213,17 @@ export default function AdminDashboard() {
                         <td className="px-4 py-3 text-gray-600 max-w-xs truncate">{r.autor}</td>
                         <td className="px-4 py-3 text-gray-600">{r.anio}</td>
                         <td className="px-4 py-3 text-gray-600">{r.vistas}</td>
+                        <td className="px-4 py-3">
+                          {r.ruta_portada ? (
+                            <img
+                              src={`/uploads/portadas/${r.ruta_portada}`}
+                              className="w-8 h-10 object-cover rounded"
+                              alt=""
+                            />
+                          ) : (
+                            <span className="text-gray-300 text-xs">—</span>
+                          )}
+                        </td>
                         <td className="px-4 py-3">
                           <button
                             onClick={() => handleDeleteRecurso(r.id_recurso)}
@@ -198,7 +260,6 @@ export default function AdminDashboard() {
                 </button>
               </form>
             </div>
-
             <div>
               <h2 className="text-lg font-bold text-gray-800 mb-4">Categorías ({categorias.length})</h2>
               <div className="bg-white rounded-xl shadow-sm divide-y">
@@ -221,54 +282,65 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Upload Tab */}
-        {tab === "upload" && (
-          <div className="max-w-2xl">
-            <h2 className="text-lg font-bold text-gray-800 mb-4">Subir nuevo recurso</h2>
-            <form onSubmit={handleUpload} className="bg-white rounded-xl shadow-sm p-6 space-y-4" encType="multipart/form-data">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Título *</label>
-                  <input name="titulo" required className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-ucips-blue outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Autor *</label>
-                  <input name="autor" required className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-ucips-blue outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Año *</label>
-                  <input name="anio" required maxLength={4} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-ucips-blue outline-none" />
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-                  <textarea name="descripcion" rows={3} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-ucips-blue outline-none resize-none" />
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
-                  <select name="id_categoria" className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-ucips-blue outline-none">
-                    <option value="">Sin categoría</option>
-                    {categorias.map((c) => (
-                      <option key={c.id_categoria} value={c.id_categoria}>{c.nombre}</option>
+        {/* Usuarios Tab */}
+        {tab === "usuarios" && (
+          <div>
+            <h2 className="text-lg font-bold text-gray-800 mb-4">Usuarios ({usuarios.length})</h2>
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50 text-gray-600">
+                    <tr>
+                      <th className="px-4 py-3 text-left">Nombre</th>
+                      <th className="px-4 py-3 text-left">Correo</th>
+                      <th className="px-4 py-3 text-left">Rol</th>
+                      <th className="px-4 py-3 text-left">Estado</th>
+                      <th className="px-4 py-3 text-left">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {usuarios.map((u) => (
+                      <tr key={u.uid} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 font-medium text-gray-800">
+                          {u.display_name ?? "—"}
+                        </td>
+                        <td className="px-4 py-3 text-gray-600">{u.email}</td>
+                        <td className="px-4 py-3">
+                          <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${ROLE_COLORS[u.role]}`}>
+                            {ROLE_LABELS[u.role]}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${u.is_active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                            {u.is_active ? "Activo" : "Inactivo"}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          {u.role !== "admin" && (
+                            <div className="flex gap-2">
+                              <select
+                                value={u.role}
+                                onChange={(e) => handleRoleChange(u.uid, e.target.value)}
+                                className="text-xs border border-gray-300 rounded px-2 py-1 outline-none"
+                              >
+                                <option value="user">Usuario</option>
+                                <option value="profesor">Profesor</option>
+                              </select>
+                              <button
+                                onClick={() => handleToggleActive(u.uid, u.is_active)}
+                                className={`text-xs font-medium ${u.is_active ? "text-red-500 hover:text-red-700" : "text-green-600 hover:text-green-800"}`}
+                              >
+                                {u.is_active ? "Desactivar" : "Activar"}
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
                     ))}
-                  </select>
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Archivo PDF *</label>
-                  <input name="pdf_file" type="file" accept="application/pdf" required className="w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-ucips-blue file:text-white file:font-medium hover:file:bg-blue-800 file:cursor-pointer" />
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Portada (imagen)</label>
-                  <input name="portada_file" type="file" accept="image/png,image/jpeg,image/webp" className="w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-gray-200 file:text-gray-700 file:font-medium hover:file:bg-gray-300 file:cursor-pointer" />
-                </div>
+                  </tbody>
+                </table>
               </div>
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full bg-ucips-blue text-white py-3 rounded-xl font-bold hover:bg-blue-800 disabled:opacity-50 transition"
-              >
-                {submitting ? "Subiendo..." : "Subir recurso"}
-              </button>
-            </form>
+            </div>
           </div>
         )}
       </div>

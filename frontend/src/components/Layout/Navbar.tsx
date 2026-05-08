@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { appUser, isAuthenticated, isAdmin } = useAuth();
+  const { appUser, isAuthenticated, isAdmin, canUpload } = useAuth();
   const { reset } = useAuthStore();
   const navigate = useNavigate();
 
@@ -34,6 +34,11 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-6">
             <Link to="/" className="text-blue-200 hover:text-white transition text-sm font-medium">Inicio</Link>
             <Link to="/recursos" className="text-blue-200 hover:text-white transition text-sm font-medium">Recursos</Link>
+            {canUpload && (
+              <Link to="/subir" className="text-blue-200 hover:text-white transition text-sm font-medium">
+                + Subir
+              </Link>
+            )}
             {isAdmin && (
               <Link to="/admin" className="text-ucips-gold hover:text-yellow-300 transition text-sm font-medium">
                 Administrar
@@ -55,6 +60,15 @@ export default function Navbar() {
                 </button>
                 {menuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl py-1 z-50">
+                    {canUpload && (
+                      <Link
+                        to="/subir"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        Subir recurso
+                      </Link>
+                    )}
                     {isAdmin && (
                       <Link
                         to="/admin"
@@ -75,10 +89,7 @@ export default function Navbar() {
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <Link
-                  to="/login"
-                  className="text-blue-200 hover:text-white text-sm font-medium transition"
-                >
+                <Link to="/login" className="text-blue-200 hover:text-white text-sm font-medium transition">
                   Ingresar
                 </Link>
                 <Link

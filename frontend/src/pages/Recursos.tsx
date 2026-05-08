@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import api from "@/lib/api";
 import type { PaginatedRecursos, RecursoListItem } from "@/types";
+import ResourceCard from "@/components/ResourceCard";
 import toast from "react-hot-toast";
 
 export default function Recursos() {
@@ -80,33 +81,7 @@ export default function Recursos() {
             <p className="text-sm text-gray-500 mb-4">{data.total} resultados</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {data.items.map((r: RecursoListItem) => (
-                <Link
-                  key={r.id_recurso}
-                  to={`/recursos/${r.id_recurso}`}
-                  className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-1 transition-all group"
-                >
-                  <div className="h-44 bg-ucips-navy flex items-center justify-center overflow-hidden">
-                    {r.ruta_portada ? (
-                      <img
-                        src={`/uploads/portadas/${r.ruta_portada}`}
-                        alt={r.titulo}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <span className="text-5xl">📖</span>
-                    )}
-                  </div>
-                  <div className="p-3">
-                    <p className="font-semibold text-sm text-gray-800 line-clamp-2">{r.titulo}</p>
-                    <p className="text-xs text-gray-500 mt-1 truncate">{r.autor}</p>
-                    {r.categoria_nombre && (
-                      <span className="inline-block mt-1 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
-                        {r.categoria_nombre}
-                      </span>
-                    )}
-                  </div>
-                </Link>
+                <ResourceCard key={r.id_recurso} recurso={r} />
               ))}
             </div>
 

@@ -9,8 +9,8 @@ from app.core.database import get_db
 from app.core.config import get_settings
 from app.models.recurso import Recurso
 from app.schemas.recurso import RecursoResponse, RecursoListResponse, PaginatedRecursos
-from app.api.deps import get_current_admin
-from app.services.storage import save_upload, delete_file, ALLOWED_PDF_MIME, ALLOWED_IMAGE_MIME
+from app.api.deps import get_current_admin, get_current_uploader
+from app.services.storage import save_upload, delete_file, generate_pdf_thumbnail, ALLOWED_PDF_MIME, ALLOWED_IMAGE_MIME
 from app.models.user import User
 
 router = APIRouter(prefix="/recursos", tags=["recursos"])
@@ -121,13 +121,16 @@ async def create_recurso(
     id_categoria: Optional[int] = Form(None),
     pdf_file: UploadFile = File(...),
     portada_file: Optional[UploadFile] = File(None),
-    _admin: User = Depends(get_current_admin),
+    _uploader: User = Depends(get_current_uploader),
     db: AsyncSession = Depends(get_db),
 ):
     pdf_name = await save_upload(pdf_file, "pdfs", ALLOWED_PDF_MIME)
     portada_name = None
     if portada_file and portada_file.filename:
         portada_name = await save_upload(portada_file, "portadas", ALLOWED_IMAGE_MIME)
+    else:
+        pdf_path = Path(settings.UPLOAD_DIR) / "pdfs" / pdf_name
+        portada_name = await generate_pdf_thumbnail(pdf_path)
 
     recurso = Recurso(
         titulo=titulo.strip(),
@@ -153,7 +156,7 @@ async def update_recurso(
     descripcion: Optional[str] = Form(None),
     id_categoria: Optional[int] = Form(None),
     portada_file: Optional[UploadFile] = File(None),
-    _admin: User = Depends(get_current_admin),
+    _uploader: User = Depends(get_current_uploader),
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(select(Recurso).where(Recurso.id_recurso == recurso_id))
@@ -196,3 +199,25 @@ async def delete_recurso(
     if recurso.ruta_portada:
         await delete_file("portadas", recurso.ruta_portada)
     await db.delete(recurso)
+
+
+@router.post("/generate-thumbnails", status_code=200)
+async def generate_missing_thumbnails(
+    _admin: User = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Generate cover thumbnails for all resources that have a PDF but no portada."""
+    result = await db.execute(
+        select(Recurso).where(Recurso.ruta_portada.is_(None))
+    )
+    recursos = result.scalars().all()
+    generated = 0
+    for r in recursos:
+        pdf_path = Path(settings.UPLOAD_DIR) / "pdfs" / r.ruta_pdf
+        if pdf_path.exists():
+            thumb = await generate_pdf_thumbnail(pdf_path)
+            if thumb:
+                r.ruta_portada = thumb
+                generated += 1
+    await db.flush()
+    return {"generated": generated, "total_sin_portada": len(recursos)}
