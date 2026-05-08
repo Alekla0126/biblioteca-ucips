@@ -8,7 +8,7 @@ export function useAuthInit() {
   const { setFirebaseUser, setAppUser, setLoading } = useAuthStore();
 
   useEffect(() => {
-    const unsubscribe = onAuthChange(async (firebaseUser) => {
+    const unsubscribe = onAuthChange(async (firebaseUser: import("firebase/auth").User | null) => {
       setFirebaseUser(firebaseUser);
       if (firebaseUser) {
         try {

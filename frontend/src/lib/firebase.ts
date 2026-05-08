@@ -7,7 +7,7 @@ import {
   signOut,
   onAuthStateChanged,
   updateProfile,
-  User,
+  type User,
 } from "firebase/auth";
 
 const firebaseConfig = {
