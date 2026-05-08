@@ -23,11 +23,12 @@ services:
   backend:
     build: ./backend
     restart: always
-    env_file: ./backend/.env
+    env_file: .env.backend
     environment:
       DATABASE_URL: mysql+aiomysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db:3306/biblioteca
     volumes:
       - uploads:/app/uploads
+      - ./firebase-service-account.json:/app/firebase-service-account.json:ro
     depends_on:
       db:
         condition: service_healthy
