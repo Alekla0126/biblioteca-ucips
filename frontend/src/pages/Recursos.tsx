@@ -20,7 +20,7 @@ export default function Recursos() {
       if (q) params.q = q;
       if (categoriaId) params.categoria_id = parseInt(categoriaId);
 
-      const res = await api.get<PaginatedRecursos>("/recursos/", { params });
+      const res = await api.get<PaginatedRecursos>("recursos/", { params });
       setData(res.data);
     } catch {
       toast.error("Error al cargar recursos");

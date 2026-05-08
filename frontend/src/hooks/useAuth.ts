@@ -12,7 +12,7 @@ export function useAuthInit() {
       setFirebaseUser(firebaseUser);
       if (firebaseUser) {
         try {
-          const res = await api.post<AppUser>("/auth/login");
+          const res = await api.post<AppUser>("auth/login");
           setAppUser(res.data);
         } catch {
           setAppUser(null);

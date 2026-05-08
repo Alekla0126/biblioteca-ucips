@@ -26,7 +26,7 @@ export default function AdminDashboard() {
 
   const fetchRecursos = async () => {
     try {
-      const res = await api.get<{ items: Recurso[] }>("/recursos/?size=100");
+      const res = await api.get<{ items: Recurso[] }>("recursos/?size=100");
       setRecursos(Array.isArray(res.data?.items) ? res.data.items : []);
     } catch {
       toast.error("Error al cargar recursos");
@@ -35,7 +35,7 @@ export default function AdminDashboard() {
 
   const fetchCategorias = async () => {
     try {
-      const res = await api.get<Categoria[]>("/categorias/");
+      const res = await api.get<Categoria[]>("categorias/");
       setCategorias(Array.isArray(res.data) ? res.data : []);
     } catch {
       toast.error("Error al cargar categorías");
@@ -45,7 +45,7 @@ export default function AdminDashboard() {
   const handleDeleteRecurso = async (id: number) => {
     if (!confirm("¿Eliminar este recurso permanentemente?")) return;
     try {
-      await api.delete(`/recursos/${id}`);
+      await api.delete(`recursos/${id}`);
       setRecursos((prev) => prev.filter((r) => r.id_recurso !== id));
       toast.success("Recurso eliminado");
     } catch {
@@ -56,7 +56,7 @@ export default function AdminDashboard() {
   const handleDeleteCategoria = async (id: number) => {
     if (!confirm("¿Eliminar esta categoría?")) return;
     try {
-      await api.delete(`/categorias/${id}`);
+      await api.delete(`categorias/${id}`);
       setCategorias((prev) => prev.filter((c) => c.id_categoria !== id));
       toast.success("Categoría eliminada");
     } catch {
@@ -70,7 +70,7 @@ export default function AdminDashboard() {
     const form = e.currentTarget;
     const formData = new FormData(form);
     try {
-      await api.post("/recursos/", formData, {
+      await api.post("recursos/", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       toast.success("Recurso subido exitosamente");
@@ -89,7 +89,7 @@ export default function AdminDashboard() {
     const form = e.currentTarget;
     const data = Object.fromEntries(new FormData(form));
     try {
-      const res = await api.post<Categoria>("/categorias/", data);
+      const res = await api.post<Categoria>("categorias/", data);
       setCategorias((prev) => [...prev, res.data]);
       toast.success("Categoría creada");
       form.reset();

@@ -30,8 +30,8 @@ export default function Home() {
     const fetchData = async () => {
       try {
         const [catsRes, recRes] = await Promise.all([
-          api.get<Categoria[]>("/categorias/"),
-          api.get<RecursoListItem[]>("/recursos/recientes?limit=8"),
+          api.get<Categoria[]>("categorias/"),
+          api.get<RecursoListItem[]>("recursos/recientes?limit=8"),
         ]);
         setCategorias(Array.isArray(catsRes.data) ? catsRes.data : []);
         setRecientes(Array.isArray(recRes.data) ? recRes.data : []);

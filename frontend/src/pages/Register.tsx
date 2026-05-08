@@ -36,7 +36,7 @@ export default function Register() {
     try {
       const { user } = await firebaseSignUp(email, password);
       await updateFirebaseProfile(user, displayName);
-      await api.post("/auth/register");
+      await api.post("auth/register");
       toast.success("Cuenta creada exitosamente");
       navigate("/", { replace: true });
     } catch (err: unknown) {

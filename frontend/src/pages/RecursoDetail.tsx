@@ -30,7 +30,7 @@ export default function RecursoDetail() {
 
   useEffect(() => {
     if (!id) return;
-    api.get<Recurso>(`/recursos/${id}`)
+    api.get<Recurso>(`recursos/${id}`)
       .then((res) => setRecurso(res.data))
       .catch(() => toast.error("Recurso no encontrado"))
       .finally(() => setLoading(false));
