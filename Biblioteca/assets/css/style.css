@@ -1,0 +1,82 @@
+/* Importamos una fuente moderna de Google */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f9fa; /* Un fondo un poco más limpio */
+}
+
+/* 1. Barra de desplazamiento (Scrollbar) personalizada */
+::-webkit-scrollbar {
+    width: 10px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+    background: #2a5298;
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #1e3c72;
+}
+
+/* 2. Animación del Hero (Encabezado) */
+.hero-section {
+    /* Fondo con gradiente animado */
+    background: linear-gradient(-45deg, #1e3c72, #2a5298, #00d2ff, #3a7bd5);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    color: white;
+    padding: 5rem 0;
+    margin-bottom: 4rem;
+    border-radius: 0 0 50px 50px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+}
+
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* 3. Tarjetas Premium (Efecto de elevación suave) */
+.categoria-card, .recurso-card {
+    border-radius: 20px !important;
+    overflow: hidden;
+    border: none !important;
+    background: #ffffff;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.03) !important;
+    /* Una transición súper fluida al pasar el mouse */
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important; 
+}
+
+.categoria-card:hover, .recurso-card:hover {
+    transform: translateY(-15px);
+    box-shadow: 0 20px 40px rgba(42, 82, 152, 0.15) !important;
+}
+
+/* 4. Botones más estéticos */
+.btn-primary, .btn-outline-primary {
+    border-radius: 50px !important; /* Botones tipo píldora */
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+    border: none;
+}
+
+.btn-primary:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 15px rgba(30, 60, 114, 0.3);
+}
+
+/* 5. Navbar flotante (Opcional, para que se vea más web 3.0) */
+.navbar {
+    background: rgba(33, 37, 41, 0.95) !important;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
