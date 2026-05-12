@@ -1,19 +1,19 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import RedirectResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from contextlib import asynccontextmanager
-from pathlib import Path
 import logging
 
 from app.core.config import get_settings
 from app.core.firebase import init_firebase
 from app.core.database import engine, Base
 from app.api.v1.router import api_router
-from app.models import user, categoria, recurso  # noqa: F401 — import for table creation
+from app.models import user, categoria, recurso  # noqa: F401
+from app.services.storage import ensure_bucket_public
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -27,6 +27,7 @@ async def lifespan(app: FastAPI):
     init_firebase()
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    ensure_bucket_public()
     logger.info("Application started")
     yield
     await engine.dispose()
@@ -61,8 +62,13 @@ async def health():
     return {"status": "ok", "version": "2.0.0"}
 
 
-app.include_router(api_router)
+@app.get("/uploads/{subfolder}/{filename}")
+async def serve_upload(subfolder: str, filename: str):
+    """Redirect image requests to the public S3 bucket URL."""
+    return RedirectResponse(
+        url=f"{settings.s3_public_base}/{subfolder}/{filename}",
+        status_code=302,
+    )
 
-uploads_dir = Path(settings.UPLOAD_DIR)
-uploads_dir.mkdir(parents=True, exist_ok=True)
-app.mount("/uploads", StaticFiles(directory=str(uploads_dir)), name="uploads")
+
+app.include_router(api_router)

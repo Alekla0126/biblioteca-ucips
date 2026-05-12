@@ -1,16 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form, Query
-from fastapi.responses import FileResponse
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, or_
 from sqlalchemy.orm import selectinload
-from pathlib import Path
 from typing import Optional
+from io import BytesIO
 from app.core.database import get_db
-from app.core.config import get_settings
 from app.models.recurso import Recurso
 from app.schemas.recurso import RecursoResponse, RecursoListResponse, PaginatedRecursos
 from app.api.deps import get_current_admin, get_current_uploader
-from app.services.storage import save_upload, delete_file, generate_pdf_thumbnail, ALLOWED_PDF_MIME, ALLOWED_IMAGE_MIME
+from app.services.storage import save_upload, delete_file, download_file, generate_pdf_thumbnail, ALLOWED_PDF_MIME, ALLOWED_IMAGE_MIME
 from app.models.user import User
 
 router = APIRouter(prefix="/recursos", tags=["recursos"])
@@ -100,15 +99,15 @@ async def stream_pdf(recurso_id: int, db: AsyncSession = Depends(get_db)):
     if not recurso:
         raise HTTPException(status_code=404, detail="Recurso no encontrado")
 
-    pdf_path = Path(settings.UPLOAD_DIR) / "pdfs" / recurso.ruta_pdf
-    if not pdf_path.exists():
+    try:
+        pdf_bytes = await download_file("pdfs", recurso.ruta_pdf)
+    except Exception:
         raise HTTPException(status_code=404, detail="Archivo PDF no encontrado")
 
-    return FileResponse(
-        path=pdf_path,
+    return StreamingResponse(
+        BytesIO(pdf_bytes),
         media_type="application/pdf",
-        filename=recurso.ruta_pdf,
-        headers={"Content-Disposition": "inline"},
+        headers={"Content-Disposition": f'inline; filename="{recurso.ruta_pdf}"'},
     )
 
 
@@ -124,13 +123,12 @@ async def create_recurso(
     _uploader: User = Depends(get_current_uploader),
     db: AsyncSession = Depends(get_db),
 ):
-    pdf_name = await save_upload(pdf_file, "pdfs", ALLOWED_PDF_MIME)
+    pdf_name, pdf_bytes = await save_upload(pdf_file, "pdfs", ALLOWED_PDF_MIME)
     portada_name = None
     if portada_file and portada_file.filename:
-        portada_name = await save_upload(portada_file, "portadas", ALLOWED_IMAGE_MIME)
+        portada_name, _ = await save_upload(portada_file, "portadas", ALLOWED_IMAGE_MIME)
     else:
-        pdf_path = Path(settings.UPLOAD_DIR) / "pdfs" / pdf_name
-        portada_name = await generate_pdf_thumbnail(pdf_path)
+        portada_name = await generate_pdf_thumbnail(pdf_bytes)
 
     recurso = Recurso(
         titulo=titulo.strip(),
@@ -178,7 +176,8 @@ async def update_recurso(
     if portada_file and portada_file.filename:
         if recurso.ruta_portada:
             await delete_file("portadas", recurso.ruta_portada)
-        recurso.ruta_portada = await save_upload(portada_file, "portadas", ALLOWED_IMAGE_MIME)
+        name, _ = await save_upload(portada_file, "portadas", ALLOWED_IMAGE_MIME)
+        recurso.ruta_portada = name
 
     await db.refresh(recurso)
     return recurso
@@ -213,11 +212,13 @@ async def generate_missing_thumbnails(
     recursos = result.scalars().all()
     generated = 0
     for r in recursos:
-        pdf_path = Path(settings.UPLOAD_DIR) / "pdfs" / r.ruta_pdf
-        if pdf_path.exists():
-            thumb = await generate_pdf_thumbnail(pdf_path)
+        try:
+            pdf_bytes = await download_file("pdfs", r.ruta_pdf)
+            thumb = await generate_pdf_thumbnail(pdf_bytes)
             if thumb:
                 r.ruta_portada = thumb
                 generated += 1
+        except Exception:
+            pass
     await db.flush()
     return {"generated": generated, "total_sin_portada": len(recursos)}
