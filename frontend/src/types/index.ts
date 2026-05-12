@@ -11,7 +11,7 @@ export interface Recurso {
   autor: string;
   anio: string;
   descripcion?: string;
-  ruta_pdf: string;
+  ruta_pdf: string | null;
   ruta_portada?: string;
   vistas: number;
   fecha_agregado: string;

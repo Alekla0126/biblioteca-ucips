@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { onAuthChange } from "@/lib/firebase";
-import api from "@/lib/api";
+import api, { ApiError } from "@/lib/api";
 import type { AppUser } from "@/types";
 
 export function useAuthInit() {
@@ -14,8 +14,17 @@ export function useAuthInit() {
         try {
           const res = await api.post<AppUser>("auth/login");
           setAppUser(res.data);
-        } catch {
-          setAppUser(null);
+        } catch (err: unknown) {
+          if (err instanceof ApiError && err.status === 404) {
+            try {
+              const res = await api.post<AppUser>("auth/register");
+              setAppUser(res.data);
+            } catch {
+              setAppUser(null);
+            }
+          } else {
+            setAppUser(null);
+          }
         }
       } else {
         setAppUser(null);

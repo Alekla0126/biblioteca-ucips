@@ -14,9 +14,9 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 const ROLE_COLORS: Record<string, string> = {
-  admin: "bg-purple-100 text-purple-700",
-  profesor: "bg-blue-100 text-blue-700",
-  user: "bg-gray-100 text-gray-600",
+  admin: "bg-purple-500/10 text-purple-400 border border-purple-500/20",
+  profesor: "bg-blue-500/10 text-blue-400 border border-blue-500/20",
+  user: "bg-slate-700/30 text-slate-400 border border-slate-600/20",
 };
 
 export default function AdminDashboard() {
@@ -24,16 +24,20 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("recursos");
   const [recursos, setRecursos] = useState<Recurso[]>([]);
+  const [recursoTotal, setRecursoTotal] = useState(0);
+  const [recursoPage, setRecursoPage] = useState(1);
+  const [recursoQ, setRecursoQ] = useState("");
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [usuarios, setUsuarios] = useState<AppUser[]>([]);
   const [generatingThumbs, setGeneratingThumbs] = useState(false);
+  const PAGE_SIZE = 50;
 
   useEffect(() => {
     if (!loading && !isAdmin) navigate("/", { replace: true });
   }, [isAdmin, loading, navigate]);
 
   useEffect(() => {
-    fetchRecursos();
+    fetchRecursos(1, "");
     fetchCategorias();
   }, []);
 
@@ -41,10 +45,15 @@ export default function AdminDashboard() {
     if (tab === "usuarios" && usuarios.length === 0) fetchUsuarios();
   }, [tab]);
 
-  const fetchRecursos = async () => {
+  const fetchRecursos = async (page = recursoPage, q = recursoQ) => {
     try {
-      const res = await api.get<{ items: Recurso[] }>("recursos/?size=100");
+      const params = new URLSearchParams({ page: String(page), size: String(PAGE_SIZE) });
+      if (q.length >= 2) params.set("q", q);
+      const res = await api.get<{ items: Recurso[]; total: number }>(`recursos/?${params}`);
       setRecursos(Array.isArray(res.data?.items) ? res.data.items : []);
+      setRecursoTotal(res.data?.total ?? 0);
+      setRecursoPage(page);
+      setRecursoQ(q);
     } catch {
       toast.error("Error al cargar recursos");
     }
@@ -141,28 +150,32 @@ export default function AdminDashboard() {
 
   if (loading) return null;
 
+  const inputClass = "w-full bg-dark-elevated border border-dark-border text-slate-100 placeholder-slate-600 px-3 py-2.5 rounded-xl focus:outline-none focus:border-ucips-gold/50 focus:ring-1 focus:ring-ucips-gold/30 transition text-sm";
+  const thClass = "px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider";
+  const tdClass = "px-4 py-3";
+
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="bg-ucips-navy py-6 px-4">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-2xl font-bold text-white">Panel de Administración</h1>
-          <p className="text-blue-300 text-sm">Biblioteca Virtual UCIPS</p>
+    <div className="min-h-screen bg-dark">
+      <div className="bg-dark-surface border-b border-dark-border py-5 px-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold text-white">Panel de Administración</h1>
+            <p className="text-slate-500 text-xs mt-0.5">Biblioteca Virtual UCIPS</p>
+          </div>
+          <a href="/subir" className="bg-ucips-gold text-ucips-navy px-4 py-2 rounded-xl font-semibold text-sm hover:bg-ucips-gold-light transition">
+            + Subir libro
+          </a>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 flex gap-1">
+      <div className="bg-dark-surface border-b border-dark-border">
+        <div className="max-w-7xl mx-auto px-4 flex">
           {(["recursos", "categorias", "usuarios"] as Tab[]).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`px-6 py-4 text-sm font-medium border-b-2 transition capitalize ${
-                tab === t
-                  ? "border-ucips-blue text-ucips-blue"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
-            >
+            <button key={t} onClick={() => setTab(t)}
+              className={`px-5 py-4 text-sm font-medium border-b-2 transition ${
+                tab === t ? "border-ucips-gold text-ucips-gold" : "border-transparent text-slate-500 hover:text-slate-300"
+              }`}>
               {t.charAt(0).toUpperCase() + t.slice(1)}
             </button>
           ))}
@@ -173,62 +186,45 @@ export default function AdminDashboard() {
         {/* Recursos Tab */}
         {tab === "recursos" && (
           <div>
-            <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
-              <h2 className="text-lg font-bold text-gray-800">Recursos ({recursos.length})</h2>
-              <div className="flex gap-2">
-                <button
-                  onClick={handleGenerateThumbnails}
-                  disabled={generatingThumbs}
-                  className="bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-800 disabled:opacity-50 transition"
-                >
-                  {generatingThumbs ? "Generando..." : "🖼 Generar portadas"}
+            <div className="flex justify-between items-center mb-5 flex-wrap gap-3">
+              <p className="text-slate-400 text-sm">{recursoTotal} recursos en total</p>
+              <div className="flex gap-2 flex-wrap">
+                <input type="search" placeholder="Buscar título o autor..." defaultValue={recursoQ}
+                  onKeyDown={(e) => { if (e.key === "Enter") fetchRecursos(1, (e.target as HTMLInputElement).value); }}
+                  onChange={(e) => { if (!e.target.value) fetchRecursos(1, ""); }}
+                  className="bg-dark-surface border border-dark-border text-slate-300 placeholder-slate-600 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-ucips-gold/40 w-52" />
+                <button onClick={handleGenerateThumbnails} disabled={generatingThumbs}
+                  className="bg-dark-surface border border-dark-border text-slate-300 px-3 py-2 rounded-lg text-sm hover:border-slate-500 disabled:opacity-40 transition">
+                  {generatingThumbs ? "Generando…" : "Generar portadas"}
                 </button>
-                <a
-                  href="/subir"
-                  className="bg-ucips-blue text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-800 transition"
-                >
-                  + Subir nuevo
-                </a>
               </div>
             </div>
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div className="bg-dark-surface border border-dark-border rounded-xl overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-gray-50 text-gray-600">
-                    <tr>
-                      <th className="px-4 py-3 text-left">ID</th>
-                      <th className="px-4 py-3 text-left">Título</th>
-                      <th className="px-4 py-3 text-left">Autor</th>
-                      <th className="px-4 py-3 text-left">Año</th>
-                      <th className="px-4 py-3 text-left">Vistas</th>
-                      <th className="px-4 py-3 text-left">Portada</th>
-                      <th className="px-4 py-3 text-left">Acciones</th>
-                    </tr>
+                  <thead className="border-b border-dark-border">
+                    <tr><th className={thClass}>ID</th><th className={thClass}>Título</th><th className={thClass}>Autor</th><th className={thClass}>Año</th><th className={thClass}>PDF</th><th className={thClass}>Portada</th><th className={thClass}></th></tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-dark-border">
                     {recursos.map((r) => (
-                      <tr key={r.id_recurso} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 text-gray-400">{r.id_recurso}</td>
-                        <td className="px-4 py-3 font-medium text-gray-800 max-w-xs truncate">{r.titulo}</td>
-                        <td className="px-4 py-3 text-gray-600 max-w-xs truncate">{r.autor}</td>
-                        <td className="px-4 py-3 text-gray-600">{r.anio}</td>
-                        <td className="px-4 py-3 text-gray-600">{r.vistas}</td>
-                        <td className="px-4 py-3">
-                          {r.ruta_portada ? (
-                            <img
-                              src={`/uploads/portadas/${r.ruta_portada}`}
-                              className="w-8 h-10 object-cover rounded"
-                              alt=""
-                            />
-                          ) : (
-                            <span className="text-gray-300 text-xs">—</span>
-                          )}
+                      <tr key={r.id_recurso} className="hover:bg-dark-hover transition-colors">
+                        <td className={`${tdClass} text-slate-600 text-xs`}>{r.id_recurso}</td>
+                        <td className={`${tdClass} font-medium text-slate-200 max-w-xs truncate`}>{r.titulo}</td>
+                        <td className={`${tdClass} text-slate-400 max-w-xs truncate`}>{r.autor}</td>
+                        <td className={`${tdClass} text-slate-500`}>{r.anio || "—"}</td>
+                        <td className={tdClass}>
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${r.ruta_pdf ? "bg-green-500/10 text-green-400" : "bg-red-500/10 text-red-400"}`}>
+                            {r.ruta_pdf ? "Sí" : "No"}
+                          </span>
                         </td>
-                        <td className="px-4 py-3">
-                          <button
-                            onClick={() => handleDeleteRecurso(r.id_recurso)}
-                            className="text-red-600 hover:text-red-800 font-medium text-xs"
-                          >
+                        <td className={tdClass}>
+                          {r.ruta_portada
+                            ? <img src={`/uploads/portadas/${r.ruta_portada}`} className="w-7 h-9 object-cover rounded" alt="" />
+                            : <span className="text-slate-700 text-xs">—</span>}
+                        </td>
+                        <td className={tdClass}>
+                          <button onClick={() => handleDeleteRecurso(r.id_recurso)}
+                            className="text-red-500 hover:text-red-400 text-xs font-medium transition">
                             Eliminar
                           </button>
                         </td>
@@ -238,41 +234,52 @@ export default function AdminDashboard() {
                 </table>
               </div>
             </div>
+            {recursoTotal > PAGE_SIZE && (
+              <div className="flex items-center justify-between mt-4">
+                <p className="text-xs text-slate-500">
+                  {(recursoPage - 1) * PAGE_SIZE + 1}–{Math.min(recursoPage * PAGE_SIZE, recursoTotal)} de {recursoTotal}
+                </p>
+                <div className="flex gap-2">
+                  <button onClick={() => fetchRecursos(recursoPage - 1)} disabled={recursoPage <= 1}
+                    className="px-3 py-1.5 text-sm bg-dark-surface border border-dark-border text-slate-400 rounded-lg disabled:opacity-30 hover:border-slate-500 transition">← Anterior</button>
+                  <button onClick={() => fetchRecursos(recursoPage + 1)} disabled={recursoPage * PAGE_SIZE >= recursoTotal}
+                    className="px-3 py-1.5 text-sm bg-dark-surface border border-dark-border text-slate-400 rounded-lg disabled:opacity-30 hover:border-slate-500 transition">Siguiente →</button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
-        {/* Categorias Tab */}
+        {/* Categorías Tab */}
         {tab === "categorias" && (
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <h2 className="text-lg font-bold text-gray-800 mb-4">Nueva categoría</h2>
-              <form onSubmit={handleCreateCategoria} className="bg-white rounded-xl shadow-sm p-6 space-y-4">
+              <h2 className="text-base font-bold text-white mb-4">Nueva categoría</h2>
+              <form onSubmit={handleCreateCategoria} className="bg-dark-surface border border-dark-border rounded-xl p-6 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-                  <input name="nombre" required className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-ucips-blue outline-none" />
+                  <label className="block text-sm font-medium text-slate-300 mb-1.5">Nombre</label>
+                  <input name="nombre" required placeholder="Ej: Derecho Penal" className={inputClass} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Icono (clase Font Awesome)</label>
-                  <input name="icono" placeholder="fa-book" required className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-ucips-blue outline-none" />
+                  <label className="block text-sm font-medium text-slate-300 mb-1.5">Icono (Font Awesome)</label>
+                  <input name="icono" placeholder="fa-book" required className={inputClass} />
                 </div>
-                <button type="submit" className="w-full bg-ucips-blue text-white py-2 rounded-lg font-semibold hover:bg-blue-800 transition">
+                <button type="submit" className="w-full bg-ucips-gold text-ucips-navy py-2.5 rounded-xl font-bold hover:bg-ucips-gold-light transition text-sm">
                   Crear categoría
                 </button>
               </form>
             </div>
             <div>
-              <h2 className="text-lg font-bold text-gray-800 mb-4">Categorías ({categorias.length})</h2>
-              <div className="bg-white rounded-xl shadow-sm divide-y">
+              <h2 className="text-base font-bold text-white mb-4">Categorías ({categorias.length})</h2>
+              <div className="bg-dark-surface border border-dark-border rounded-xl divide-y divide-dark-border overflow-hidden">
                 {categorias.map((c) => (
-                  <div key={c.id_categoria} className="flex items-center justify-between px-4 py-3">
+                  <div key={c.id_categoria} className="flex items-center justify-between px-4 py-3 hover:bg-dark-hover transition-colors">
                     <div>
-                      <p className="font-medium text-gray-800">{c.nombre}</p>
-                      <p className="text-xs text-gray-400">{c.total_recursos} recursos · {c.icono}</p>
+                      <p className="font-medium text-slate-200 text-sm">{c.nombre}</p>
+                      <p className="text-xs text-slate-600">{c.total_recursos} recursos · {c.icono}</p>
                     </div>
-                    <button
-                      onClick={() => handleDeleteCategoria(c.id_categoria)}
-                      className="text-red-500 hover:text-red-700 text-xs font-medium"
-                    >
+                    <button onClick={() => handleDeleteCategoria(c.id_categoria)}
+                      className="text-red-500 hover:text-red-400 text-xs font-medium transition">
                       Eliminar
                     </button>
                   </div>
@@ -285,51 +292,38 @@ export default function AdminDashboard() {
         {/* Usuarios Tab */}
         {tab === "usuarios" && (
           <div>
-            <h2 className="text-lg font-bold text-gray-800 mb-4">Usuarios ({usuarios.length})</h2>
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <h2 className="text-base font-bold text-white mb-4">Usuarios ({usuarios.length})</h2>
+            <div className="bg-dark-surface border border-dark-border rounded-xl overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-gray-50 text-gray-600">
-                    <tr>
-                      <th className="px-4 py-3 text-left">Nombre</th>
-                      <th className="px-4 py-3 text-left">Correo</th>
-                      <th className="px-4 py-3 text-left">Rol</th>
-                      <th className="px-4 py-3 text-left">Estado</th>
-                      <th className="px-4 py-3 text-left">Acciones</th>
-                    </tr>
+                  <thead className="border-b border-dark-border">
+                    <tr><th className={thClass}>Nombre</th><th className={thClass}>Correo</th><th className={thClass}>Rol</th><th className={thClass}>Estado</th><th className={thClass}>Acciones</th></tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-dark-border">
                     {usuarios.map((u) => (
-                      <tr key={u.uid} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 font-medium text-gray-800">
-                          {u.display_name ?? "—"}
-                        </td>
-                        <td className="px-4 py-3 text-gray-600">{u.email}</td>
-                        <td className="px-4 py-3">
-                          <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${ROLE_COLORS[u.role]}`}>
+                      <tr key={u.uid} className="hover:bg-dark-hover transition-colors">
+                        <td className={`${tdClass} font-medium text-slate-200`}>{u.display_name ?? "—"}</td>
+                        <td className={`${tdClass} text-slate-400`}>{u.email}</td>
+                        <td className={tdClass}>
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${ROLE_COLORS[u.role]}`}>
                             {ROLE_LABELS[u.role]}
                           </span>
                         </td>
-                        <td className="px-4 py-3">
-                          <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${u.is_active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                        <td className={tdClass}>
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${u.is_active ? "bg-green-500/10 text-green-400 border border-green-500/20" : "bg-red-500/10 text-red-400 border border-red-500/20"}`}>
                             {u.is_active ? "Activo" : "Inactivo"}
                           </span>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className={tdClass}>
                           {u.role !== "admin" && (
-                            <div className="flex gap-2">
-                              <select
-                                value={u.role}
-                                onChange={(e) => handleRoleChange(u.uid, e.target.value)}
-                                className="text-xs border border-gray-300 rounded px-2 py-1 outline-none"
-                              >
+                            <div className="flex gap-2 items-center">
+                              <select value={u.role} onChange={(e) => handleRoleChange(u.uid, e.target.value)}
+                                className="text-xs bg-dark-elevated border border-dark-border text-slate-300 rounded-lg px-2 py-1 outline-none focus:border-ucips-gold/40">
                                 <option value="user">Usuario</option>
                                 <option value="profesor">Profesor</option>
                               </select>
-                              <button
-                                onClick={() => handleToggleActive(u.uid, u.is_active)}
-                                className={`text-xs font-medium ${u.is_active ? "text-red-500 hover:text-red-700" : "text-green-600 hover:text-green-800"}`}
-                              >
+                              <button onClick={() => handleToggleActive(u.uid, u.is_active)}
+                                className={`text-xs font-medium transition ${u.is_active ? "text-red-500 hover:text-red-400" : "text-green-500 hover:text-green-400"}`}>
                                 {u.is_active ? "Desactivar" : "Activar"}
                               </button>
                             </div>

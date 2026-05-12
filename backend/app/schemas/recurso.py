@@ -39,9 +39,14 @@ class RecursoUpdate(BaseModel):
     id_categoria: Optional[int] = None
 
 
-class RecursoResponse(RecursoBase):
+class RecursoResponse(BaseModel):
     id_recurso: int
-    ruta_pdf: str
+    titulo: str
+    autor: str
+    anio: str
+    descripcion: Optional[str] = None
+    id_categoria: Optional[int] = None
+    ruta_pdf: Optional[str]
     ruta_portada: Optional[str]
     vistas: int
     fecha_agregado: datetime

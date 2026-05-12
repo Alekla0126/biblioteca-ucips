@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
 from datetime import datetime, timezone
 from typing import List
 from app.core.database import get_db
@@ -34,14 +34,18 @@ async def register(
         existing.last_login = datetime.now(timezone.utc)
         return existing
 
+    user_count = (await db.execute(select(func.count()).select_from(User))).scalar() or 0
+    role = UserRole.admin if user_count == 0 else UserRole.user
+
     user = User(
         uid=uid,
         email=email,
         display_name=payload.get("name"),
-        role=UserRole.user,
+        role=role,
     )
     db.add(user)
     await db.flush()
+    await db.refresh(user)
     return user
 
 
@@ -67,6 +71,8 @@ async def login(
         )
 
     user.last_login = datetime.now(timezone.utc)
+    await db.flush()
+    await db.refresh(user)
     return user
 
 
@@ -83,6 +89,8 @@ async def update_me(
 ):
     if data.display_name is not None:
         current_user.display_name = data.display_name
+    await db.flush()
+    await db.refresh(current_user)
     return current_user
 
 
@@ -113,4 +121,6 @@ async def update_user_role(
         set_admin_claim(uid, data.role == UserRole.admin)
     if data.is_active is not None:
         user.is_active = data.is_active
+    await db.flush()
+    await db.refresh(user)
     return user

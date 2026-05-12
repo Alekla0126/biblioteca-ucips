@@ -15,12 +15,20 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
+export class ApiError extends Error {
+  status: number;
+  constructor(msg: string, status: number) {
+    super(msg);
+    this.status = status;
+  }
+}
+
 api.interceptors.response.use(
   (res) => res,
   (error) => {
-    const msg =
-      error.response?.data?.detail ?? error.message ?? "Error de red";
-    return Promise.reject(new Error(msg));
+    const msg = error.response?.data?.detail ?? error.message ?? "Error de red";
+    const status = error.response?.status ?? 0;
+    return Promise.reject(new ApiError(msg, status));
   }
 );
 

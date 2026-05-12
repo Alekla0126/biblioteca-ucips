@@ -12,7 +12,7 @@ class Recurso(Base):
     autor = Column(String(255), nullable=False)
     anio = Column(String(4), nullable=False)
     descripcion = Column(Text, nullable=True)
-    ruta_pdf = Column(String(255), nullable=False)
+    ruta_pdf = Column(String(255), nullable=True)
     ruta_portada = Column(String(255), nullable=True)
     id_categoria = Column(Integer, ForeignKey("categorias.id_categoria", ondelete="SET NULL"), nullable=True)
     vistas = Column(Integer, default=0, nullable=False)
