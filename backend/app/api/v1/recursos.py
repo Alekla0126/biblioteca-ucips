@@ -13,7 +13,6 @@ from app.services.storage import save_upload, delete_file, download_file, genera
 from app.models.user import User
 
 router = APIRouter(prefix="/recursos", tags=["recursos"])
-settings = get_settings()
 
 
 def _to_list_response(r: Recurso) -> RecursoListResponse:
