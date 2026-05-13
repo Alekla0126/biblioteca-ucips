@@ -17,5 +17,6 @@ class Recurso(Base):
     id_categoria = Column(Integer, ForeignKey("categorias.id_categoria", ondelete="SET NULL"), nullable=True)
     vistas = Column(Integer, default=0, nullable=False)
     fecha_agregado = Column(DateTime(timezone=True), server_default=func.now())
+    deleted_at = Column(DateTime(timezone=True), nullable=True, default=None)
 
     categoria = relationship("Categoria", back_populates="recursos")

@@ -1,4 +1,5 @@
 import re
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,6 +13,8 @@ from app.schemas.recurso import RecursoResponse, RecursoListResponse, PaginatedR
 from app.api.deps import get_current_admin, get_current_uploader
 from app.services.storage import save_upload, delete_file, download_file, generate_pdf_thumbnail, ALLOWED_PDF_MIME, ALLOWED_IMAGE_MIME
 from app.models.user import User
+
+_ACTIVE = Recurso.deleted_at.is_(None)
 
 router = APIRouter(prefix="/recursos", tags=["recursos"])
 
@@ -48,7 +51,7 @@ async def list_recursos(
     size: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
 ):
-    stmt = select(Recurso).options(selectinload(Recurso.categoria))
+    stmt = select(Recurso).options(selectinload(Recurso.categoria)).where(_ACTIVE)
 
     if q:
         pattern = f"%{q}%"
@@ -76,7 +79,7 @@ async def list_recursos(
 async def get_recientes(limit: int = Query(12, ge=1, le=50), db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(Recurso).options(selectinload(Recurso.categoria))
-        .order_by(Recurso.fecha_agregado.desc()).limit(limit)
+        .where(_ACTIVE).order_by(Recurso.fecha_agregado.desc()).limit(limit)
     )
     return [_to_list_response(r) for r in result.scalars().all()]
 
@@ -85,7 +88,7 @@ async def get_recientes(limit: int = Query(12, ge=1, le=50), db: AsyncSession = 
 async def get_populares(limit: int = Query(12, ge=1, le=50), db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(Recurso).options(selectinload(Recurso.categoria))
-        .order_by(Recurso.vistas.desc()).limit(limit)
+        .where(_ACTIVE).order_by(Recurso.vistas.desc()).limit(limit)
     )
     return [_to_list_response(r) for r in result.scalars().all()]
 
@@ -94,7 +97,7 @@ async def get_populares(limit: int = Query(12, ge=1, le=50), db: AsyncSession = 
 async def get_recurso(recurso_id: int, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(Recurso).options(selectinload(Recurso.categoria))
-        .where(Recurso.id_recurso == recurso_id)
+        .where(Recurso.id_recurso == recurso_id, _ACTIVE)
     )
     recurso = result.scalar_one_or_none()
     if not recurso:
@@ -105,7 +108,7 @@ async def get_recurso(recurso_id: int, db: AsyncSession = Depends(get_db)):
 
 @router.get("/{recurso_id}/pdf")
 async def stream_pdf(recurso_id: int, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Recurso).where(Recurso.id_recurso == recurso_id))
+    result = await db.execute(select(Recurso).where(Recurso.id_recurso == recurso_id, _ACTIVE))
     recurso = result.scalar_one_or_none()
     if not recurso or not recurso.ruta_pdf:
         raise HTTPException(status_code=404, detail="Archivo PDF no encontrado")
@@ -178,7 +181,7 @@ async def update_recurso(
     _uploader: User = Depends(get_current_uploader),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(select(Recurso).where(Recurso.id_recurso == recurso_id))
+    result = await db.execute(select(Recurso).where(Recurso.id_recurso == recurso_id, _ACTIVE))
     recurso = result.scalar_one_or_none()
     if not recurso:
         raise HTTPException(status_code=404, detail="Recurso no encontrado")
@@ -216,16 +219,12 @@ async def delete_recurso(
     _admin: User = Depends(get_current_admin),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(select(Recurso).where(Recurso.id_recurso == recurso_id))
+    result = await db.execute(select(Recurso).where(Recurso.id_recurso == recurso_id, _ACTIVE))
     recurso = result.scalar_one_or_none()
     if not recurso:
         raise HTTPException(status_code=404, detail="Recurso no encontrado")
 
-    if recurso.ruta_pdf:
-        await delete_file("pdfs", recurso.ruta_pdf)
-    if recurso.ruta_portada:
-        await delete_file("portadas", recurso.ruta_portada)
-    await db.delete(recurso)
+    recurso.deleted_at = datetime.now(timezone.utc)
 
 
 @router.post("/generate-thumbnails", status_code=200)
@@ -235,7 +234,7 @@ async def generate_missing_thumbnails(
 ):
     """Generate cover thumbnails for all resources that have a PDF but no portada."""
     result = await db.execute(
-        select(Recurso).where(Recurso.ruta_portada.is_(None), Recurso.ruta_pdf.isnot(None))
+        select(Recurso).where(_ACTIVE, Recurso.ruta_portada.is_(None), Recurso.ruta_pdf.isnot(None))
     )
     recursos = result.scalars().all()
     generated = 0
