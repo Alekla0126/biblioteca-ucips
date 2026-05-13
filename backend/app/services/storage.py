@@ -13,8 +13,10 @@ ALLOWED_PDF_MIME = {"application/pdf"}
 ALLOWED_IMAGE_MIME = {"image/jpeg", "image/png", "image/webp"}
 MAX_BYTES = settings.MAX_FILE_SIZE_MB * 1024 * 1024
 
-# Filenames are always UUID hex (32 chars) + known extension
-_SAFE_FILENAME_RE = re.compile(r"^[a-f0-9]{32}\.(pdf|jpg|png|webp)$")
+# New uploads: UUID hex + extension. Legacy imports: libro_TIMESTAMP_RANDOM.pdf
+_SAFE_FILENAME_RE = re.compile(
+    r"^([a-f0-9]{32}\.(pdf|jpg|png|webp)|libro_\d+_\d+\.pdf|portada_\d+_\d+\.png)$"
+)
 
 
 def _s3():
