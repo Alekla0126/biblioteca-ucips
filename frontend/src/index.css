@@ -11,6 +11,7 @@
 
 /* ── Light theme (default) ─────────────────────────────────────────── */
 :root {
+  color-scheme: light;          /* inputs, scrollbars y selects en modo claro */
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -35,6 +36,7 @@
 
 /* ── Dark theme (navy institucional Pantone 276 C) ──────────────────── */
 .dark {
+  color-scheme: dark;           /* inputs, scrollbars y selects en modo oscuro */
   --surface-bg:      13  12  25;   /* navy-dark  (#0d0c19)             */
   --surface-card:    25  24  45;   /* navy medio                        */
   --surface-overlay: 36  34  54;   /* Pantone 276 C exacto (#242236)   */
@@ -70,6 +72,12 @@ body {
 }
 
 #root { min-height: 100vh; }
+
+/* ── Input text color — garantiza legibilidad independiente del SO ─── */
+input, textarea, select {
+  color: rgb(var(--ink));
+  background-color: rgb(var(--surface-overlay));
+}
 
 /* ── Scrollbar ──────────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
