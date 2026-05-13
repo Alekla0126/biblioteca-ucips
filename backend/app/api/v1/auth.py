@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from datetime import datetime, timezone
 from typing import List
 from app.core.database import get_db
 from app.core.firebase import verify_firebase_token, set_admin_claim
+from app.core.limiter import limiter
 from app.models.user import User, UserRole
 from app.schemas.user import UserResponse, UserUpdate
 from app.api.deps import get_current_user, get_current_admin
@@ -15,7 +16,9 @@ bearer = HTTPBearer()
 
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("5/minute")
 async def register(
+    request: Request,
     credentials: HTTPAuthorizationCredentials = Depends(bearer),
     db: AsyncSession = Depends(get_db),
 ):
@@ -32,6 +35,8 @@ async def register(
     existing = result.scalar_one_or_none()
     if existing:
         existing.last_login = datetime.now(timezone.utc)
+        await db.flush()
+        await db.refresh(existing)
         return existing
 
     user_count = (await db.execute(select(func.count()).select_from(User))).scalar() or 0
@@ -50,7 +55,9 @@ async def register(
 
 
 @router.post("/login", response_model=UserResponse)
+@limiter.limit("20/minute")
 async def login(
+    request: Request,
     credentials: HTTPAuthorizationCredentials = Depends(bearer),
     db: AsyncSession = Depends(get_db),
 ):
@@ -68,6 +75,12 @@ async def login(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Usuario no registrado. Por favor registre su cuenta.",
+        )
+
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cuenta desactivada. Contacte al administrador.",
         )
 
     user.last_login = datetime.now(timezone.utc)
@@ -88,7 +101,7 @@ async def update_me(
     db: AsyncSession = Depends(get_db),
 ):
     if data.display_name is not None:
-        current_user.display_name = data.display_name
+        current_user.display_name = data.display_name.strip()[:80]
     await db.flush()
     await db.refresh(current_user)
     return current_user
@@ -110,7 +123,7 @@ async def update_user_role(
     _admin: User = Depends(get_current_admin),
     db: AsyncSession = Depends(get_db),
 ):
-    """Admin: change user role."""
+    """Admin: change user role or active status."""
     result = await db.execute(select(User).where(User.uid == uid))
     user = result.scalar_one_or_none()
     if not user:

@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "dev-secret"
     ENVIRONMENT: str = "development"
     ALLOWED_ORIGINS: str = "http://localhost:5173"
+    ALLOWED_HOSTS: str = "localhost,127.0.0.1"
     MAX_FILE_SIZE_MB: int = 50
 
     # Contabo S3 / Object Storage
@@ -21,6 +22,10 @@ class Settings(BaseSettings):
     @property
     def origins_list(self) -> list[str]:
         return [o.strip() for o in self.ALLOWED_ORIGINS.split(",")]
+
+    @property
+    def allowed_hosts_list(self) -> list[str]:
+        return [h.strip() for h in self.ALLOWED_HOSTS.split(",")]
 
     @property
     def s3_public_base(self) -> str:

@@ -1,14 +1,20 @@
+import re
 import uuid
 import asyncio
+import logging
 import magic
 from fastapi import UploadFile, HTTPException
 from app.core.config import get_settings
 
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 ALLOWED_PDF_MIME = {"application/pdf"}
 ALLOWED_IMAGE_MIME = {"image/jpeg", "image/png", "image/webp"}
 MAX_BYTES = settings.MAX_FILE_SIZE_MB * 1024 * 1024
+
+# Filenames are always UUID hex (32 chars) + known extension
+_SAFE_FILENAME_RE = re.compile(r"^[a-f0-9]{32}\.(pdf|jpg|png|webp)$")
 
 
 def _s3():
@@ -34,13 +40,19 @@ def _put(key: str, body: bytes, content_type: str) -> None:
 def _delete(key: str) -> None:
     try:
         _s3().delete_object(Bucket=settings.S3_BUCKET, Key=key)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("S3 delete failed for key %s: %s", key, e)
 
 
 def _download(key: str) -> bytes:
     resp = _s3().get_object(Bucket=settings.S3_BUCKET, Key=key)
     return resp["Body"].read()
+
+
+def _validate_filename(filename: str) -> None:
+    """Reject filenames that don't match the UUID+ext pattern we generate."""
+    if not _SAFE_FILENAME_RE.match(filename):
+        raise HTTPException(status_code=400, detail="Nombre de archivo inválido")
 
 
 async def save_upload(file: UploadFile, subfolder: str, allowed_mime: set[str]) -> tuple[str, bytes]:
@@ -65,12 +77,14 @@ async def save_upload(file: UploadFile, subfolder: str, allowed_mime: set[str]) 
 
 
 async def delete_file(subfolder: str, filename: str) -> None:
+    _validate_filename(filename)
     key = f"{subfolder}/{filename}"
     loop = asyncio.get_event_loop()
     await loop.run_in_executor(None, _delete, key)
 
 
 async def download_file(subfolder: str, filename: str) -> bytes:
+    _validate_filename(filename)
     key = f"{subfolder}/{filename}"
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(None, _download, key)
@@ -93,7 +107,8 @@ def _sync_thumbnail(pdf_bytes: bytes) -> str | None:
         filename = f"{uuid.uuid4().hex}.png"
         _put(f"portadas/{filename}", png_bytes, "image/png")
         return filename
-    except Exception:
+    except Exception as e:
+        logger.warning("PDF thumbnail generation failed: %s", e)
         return None
 
 
@@ -117,5 +132,5 @@ def ensure_bucket_public() -> None:
     })
     try:
         _s3().put_bucket_policy(Bucket=settings.S3_BUCKET, Policy=policy)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("Failed to set S3 bucket public policy: %s", e)

@@ -10,26 +10,36 @@ export function useAuthInit() {
   useEffect(() => {
     const unsubscribe = onAuthChange(async (firebaseUser: import("firebase/auth").User | null) => {
       setFirebaseUser(firebaseUser);
-      if (firebaseUser) {
-        try {
-          const res = await api.post<AppUser>("auth/login");
-          setAppUser(res.data);
-        } catch (err: unknown) {
-          if (err instanceof ApiError && err.status === 404) {
+
+      if (!firebaseUser) {
+        setAppUser(null);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const res = await api.post<AppUser>("auth/login");
+        setAppUser(res.data);
+      } catch (err: unknown) {
+        if (err instanceof ApiError) {
+          if (err.status === 404) {
+            // New user — register them in the backend
             try {
               const res = await api.post<AppUser>("auth/register");
               setAppUser(res.data);
             } catch {
               setAppUser(null);
             }
-          } else {
+          } else if (err.status === 401) {
+            // Token revoked or invalid — clear session
             setAppUser(null);
           }
+          // For 5xx / network errors: keep existing cached appUser (from localStorage)
+          // so transient backend issues don't wipe the user's role on screen
         }
-      } else {
-        setAppUser(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     });
     return unsubscribe;
   }, [setFirebaseUser, setAppUser, setLoading]);
@@ -46,6 +56,8 @@ export function useAuth() {
     isAdmin,
     isProfesor,
     canUpload: isAdmin || isProfesor,
-    isAuthenticated: !!firebaseUser,
+    // Use persisted appUser as fallback while Firebase initialises (~500 ms delay)
+    // so cached role is visible immediately on page load without a flash
+    isAuthenticated: !!firebaseUser || !!appUser,
   };
 }

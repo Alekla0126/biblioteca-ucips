@@ -1,3 +1,4 @@
+import re
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,6 +14,17 @@ from app.services.storage import save_upload, delete_file, download_file, genera
 from app.models.user import User
 
 router = APIRouter(prefix="/recursos", tags=["recursos"])
+
+_ANIO_RE = re.compile(r"^\d{4}$")
+
+
+def _validate_text(value: str, field: str, max_len: int) -> str:
+    value = value.strip()
+    if not value:
+        raise HTTPException(400, f"{field} no puede estar vacío")
+    if len(value) > max_len:
+        raise HTTPException(400, f"{field} demasiado largo (máx. {max_len} caracteres)")
+    return value
 
 
 def _to_list_response(r: Recurso) -> RecursoListResponse:
@@ -30,7 +42,7 @@ def _to_list_response(r: Recurso) -> RecursoListResponse:
 
 @router.get("/", response_model=PaginatedRecursos)
 async def list_recursos(
-    q: Optional[str] = Query(None, min_length=2),
+    q: Optional[str] = Query(None, min_length=2, max_length=200),
     categoria_id: Optional[int] = None,
     page: int = Query(1, ge=1),
     size: int = Query(20, ge=1, le=100),
@@ -95,8 +107,8 @@ async def get_recurso(recurso_id: int, db: AsyncSession = Depends(get_db)):
 async def stream_pdf(recurso_id: int, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Recurso).where(Recurso.id_recurso == recurso_id))
     recurso = result.scalar_one_or_none()
-    if not recurso:
-        raise HTTPException(status_code=404, detail="Recurso no encontrado")
+    if not recurso or not recurso.ruta_pdf:
+        raise HTTPException(status_code=404, detail="Archivo PDF no encontrado")
 
     try:
         pdf_bytes = await download_file("pdfs", recurso.ruta_pdf)
@@ -122,6 +134,16 @@ async def create_recurso(
     _uploader: User = Depends(get_current_uploader),
     db: AsyncSession = Depends(get_db),
 ):
+    titulo = _validate_text(titulo, "Título", 500)
+    autor = _validate_text(autor, "Autor", 255)
+    anio = anio.strip()
+    if not _ANIO_RE.match(anio):
+        raise HTTPException(400, "El año debe ser exactamente 4 dígitos numéricos")
+    if descripcion:
+        descripcion = descripcion.strip()
+        if len(descripcion) > 10_000:
+            raise HTTPException(400, "Descripción demasiado larga (máx. 10 000 caracteres)")
+
     pdf_name, pdf_bytes = await save_upload(pdf_file, "pdfs", ALLOWED_PDF_MIME)
     portada_name = None
     if portada_file and portada_file.filename:
@@ -130,9 +152,9 @@ async def create_recurso(
         portada_name = await generate_pdf_thumbnail(pdf_bytes)
 
     recurso = Recurso(
-        titulo=titulo.strip(),
-        autor=autor.strip(),
-        anio=anio.strip(),
+        titulo=titulo,
+        autor=autor,
+        anio=anio,
         descripcion=descripcion,
         id_categoria=id_categoria,
         ruta_pdf=pdf_name,
@@ -161,13 +183,19 @@ async def update_recurso(
     if not recurso:
         raise HTTPException(status_code=404, detail="Recurso no encontrado")
 
-    if titulo:
-        recurso.titulo = titulo.strip()
-    if autor:
-        recurso.autor = autor.strip()
-    if anio:
-        recurso.anio = anio.strip()
+    if titulo is not None:
+        recurso.titulo = _validate_text(titulo, "Título", 500)
+    if autor is not None:
+        recurso.autor = _validate_text(autor, "Autor", 255)
+    if anio is not None:
+        anio = anio.strip()
+        if not _ANIO_RE.match(anio):
+            raise HTTPException(400, "El año debe ser exactamente 4 dígitos numéricos")
+        recurso.anio = anio
     if descripcion is not None:
+        descripcion = descripcion.strip()
+        if len(descripcion) > 10_000:
+            raise HTTPException(400, "Descripción demasiado larga (máx. 10 000 caracteres)")
         recurso.descripcion = descripcion
     if id_categoria is not None:
         recurso.id_categoria = id_categoria
@@ -193,7 +221,8 @@ async def delete_recurso(
     if not recurso:
         raise HTTPException(status_code=404, detail="Recurso no encontrado")
 
-    await delete_file("pdfs", recurso.ruta_pdf)
+    if recurso.ruta_pdf:
+        await delete_file("pdfs", recurso.ruta_pdf)
     if recurso.ruta_portada:
         await delete_file("portadas", recurso.ruta_portada)
     await db.delete(recurso)
@@ -206,7 +235,7 @@ async def generate_missing_thumbnails(
 ):
     """Generate cover thumbnails for all resources that have a PDF but no portada."""
     result = await db.execute(
-        select(Recurso).where(Recurso.ruta_portada.is_(None))
+        select(Recurso).where(Recurso.ruta_portada.is_(None), Recurso.ruta_pdf.isnot(None))
     )
     recursos = result.scalars().all()
     generated = 0

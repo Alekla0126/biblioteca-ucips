@@ -13,22 +13,23 @@ router = APIRouter(prefix="/categorias", tags=["categorias"])
 
 @router.get("/", response_model=list[CategoriaResponse])
 async def list_categorias(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Categoria).order_by(Categoria.nombre))
-    categorias = result.scalars().all()
-
-    enriched = []
-    for cat in categorias:
-        count_result = await db.execute(
-            select(func.count(Recurso.id_recurso)).where(Recurso.id_categoria == cat.id_categoria)
+    # Single query with LEFT JOIN + GROUP BY — avoids N+1 selects
+    stmt = (
+        select(Categoria, func.count(Recurso.id_recurso).label("cnt"))
+        .outerjoin(Recurso, Recurso.id_categoria == Categoria.id_categoria)
+        .group_by(Categoria.id_categoria)
+        .order_by(Categoria.nombre)
+    )
+    rows = (await db.execute(stmt)).all()
+    return [
+        CategoriaResponse(
+            id_categoria=row.Categoria.id_categoria,
+            nombre=row.Categoria.nombre,
+            icono=row.Categoria.icono,
+            total_recursos=row.cnt,
         )
-        total = count_result.scalar() or 0
-        enriched.append(CategoriaResponse(
-            id_categoria=cat.id_categoria,
-            nombre=cat.nombre,
-            icono=cat.icono,
-            total_recursos=total,
-        ))
-    return enriched
+        for row in rows
+    ]
 
 
 @router.get("/{categoria_id}", response_model=CategoriaResponse)
