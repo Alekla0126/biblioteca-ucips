@@ -23,9 +23,9 @@
   --surface-hover:   235 233 225;   /* arena claro                       */
 
   --ink:       13  12  25;   /* navy profundo (texto principal)   */
-  --ink-soft:  72  71  71;   /* charcoal UCIPS (#484747)          */
-  --ink-muted: 100 99  99;   /* gris medio                        */
-  --ink-faint: 178 178 177;  /* gris claro (#b2b2b1)              */
+  --ink-soft:  60  58  58;   /* charcoal oscuro                   */
+  --ink-muted: 90  88  85;   /* gris medio-oscuro                 */
+  --ink-faint: 130 127 118;  /* gris visible (contraste ≥ 4.5:1) */
 
   /* Acento institucional */
   --accent:        231 155 66;   /* dorado Pantone 7563 C (#e79b42) */
@@ -43,8 +43,8 @@
 
   --ink:       255 253 237;  /* crema UCIPS (#fffded)            */
   --ink-soft:  226 190 150;  /* tan UCIPS (#e2be96)              */
-  --ink-muted: 178 178 177;  /* gris medio (#b2b2b1)             */
-  --ink-faint: 100 99  99;   /* gris apagado                     */
+  --ink-muted: 180 176 168;  /* gris claro visible               */
+  --ink-faint: 145 141 155;  /* gris suave (contraste ≥ 4.5:1)  */
 
   /* Acento institucional */
   --accent:        231 155 66;   /* dorado Pantone 7563 C (#e79b42) */

@@ -15,9 +15,9 @@ type FormData = z.infer<typeof schema>;
 
 const ROLE_LABELS: Record<string, string> = { admin: "Administrador", profesor: "Profesor", user: "Usuario" };
 const ROLE_COLORS: Record<string, string> = {
-  admin: "bg-purple-500/10 text-purple-400 border border-purple-500/20",
-  profesor: "bg-blue-500/10 text-blue-400 border border-blue-500/20",
-  user: "bg-dark-elevated text-ink-muted border border-dark-border",
+  admin:    "bg-ucips-crimson/10 text-ucips-crimson border border-ucips-crimson/30",
+  profesor: "bg-ucips-teal/10    text-ucips-teal    border border-ucips-teal/30",
+  user:     "bg-dark-elevated    text-ink-muted     border border-dark-border",
 };
 
 export default function Perfil() {
