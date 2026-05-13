@@ -16,11 +16,11 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  --surface-bg:      252 251 248;   /* crema UCIPS (#fffded desaturado)  */
-  --surface-card:    255 255 255;   /* blanco                            */
-  --surface-overlay: 241 240 235;   /* crema suave                       */
-  --surface-border:  220 218 210;   /* arena                             */
-  --surface-hover:   235 233 225;   /* arena claro                       */
+  --surface-bg:      240 238 230;   /* crema UCIPS (base de página)      */
+  --surface-card:    255 254 250;   /* blanco cálido (cards)             */
+  --surface-overlay: 226 223 213;   /* crema oscura (inputs / elevated)  */
+  --surface-border:  182 177 162;   /* arena visible (bordes de card)    */
+  --surface-hover:   235 233 224;   /* hover suave                       */
 
   --ink:       13  12  25;   /* navy profundo (texto principal)   */
   --ink-soft:  60  58  58;   /* charcoal oscuro                   */

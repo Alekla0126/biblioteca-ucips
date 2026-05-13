@@ -2,15 +2,16 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import type { RecursoListItem } from "@/types";
 
+/* Portadas genéricas — paleta UCIPS Gama Cromática Autorizada */
 const COVERS = [
-  { from: "#1e3a8a", to: "#1d4ed8" },
-  { from: "#312e81", to: "#4338ca" },
-  { from: "#134e4a", to: "#0f766e" },
-  { from: "#14532d", to: "#166534" },
-  { from: "#4a1d96", to: "#7c3aed" },
-  { from: "#1e293b", to: "#334155" },
-  { from: "#164e63", to: "#0e7490" },
-  { from: "#7c2d12", to: "#c2410c" },
+  { from: "#1a1535", to: "#242236" },  // Pantone 276 C navy
+  { from: "#5f1b2d", to: "#861e34" },  // borgoña → carmesí
+  { from: "#0c312d", to: "#246257" },  // teal oscuro → teal
+  { from: "#861e34", to: "#af1731" },  // carmesí → carmesí vivo
+  { from: "#0c312d", to: "#3d9b84" },  // teal oscuro → teal claro
+  { from: "#242236", to: "#5f1b2d" },  // navy → borgoña
+  { from: "#246257", to: "#3d9b84" },  // teal → teal claro
+  { from: "#2e2c40", to: "#484747" },  // navy suave → charcoal
 ];
 
 function coverFor(id: number | undefined) {
@@ -60,7 +61,7 @@ export default function ResourceCard({ recurso: r, className = "" }: Props) {
                 {r.titulo}
               </p>
               {r.autor && (
-                <p className="text-white/55 text-[11px] text-center truncate max-w-full mt-0.5">
+                <p className="text-white/75 text-[11px] text-center truncate max-w-full mt-0.5">
                   {r.autor}
                 </p>
               )}
