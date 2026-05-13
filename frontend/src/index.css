@@ -3,31 +3,85 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── UCIPS Gama Cromática Autorizada ────────────────────────────────── */
+/* Pantone 276 C  → #242236  navy institucional                          */
+/* Pantone 7563 C → #e79b42  dorado ámbar                               */
+/* Carmesí        → #861e34 / #af1731                                   */
+/* Teal           → #246257 / #3d9b84                                   */
+
+/* ── Light theme (default) ─────────────────────────────────────────── */
 :root {
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --surface-bg:      252 251 248;   /* crema UCIPS (#fffded desaturado)  */
+  --surface-card:    255 255 255;   /* blanco                            */
+  --surface-overlay: 241 240 235;   /* crema suave                       */
+  --surface-border:  220 218 210;   /* arena                             */
+  --surface-hover:   235 233 225;   /* arena claro                       */
+
+  --ink:       13  12  25;   /* navy profundo (texto principal)   */
+  --ink-soft:  72  71  71;   /* charcoal UCIPS (#484747)          */
+  --ink-muted: 100 99  99;   /* gris medio                        */
+  --ink-faint: 178 178 177;  /* gris claro (#b2b2b1)              */
+
+  /* Acento institucional */
+  --accent:        231 155 66;   /* dorado Pantone 7563 C (#e79b42) */
+  --accent-crimson: 134 30  52;  /* carmesí (#861e34)               */
+  --accent-teal:    61 155 132;  /* teal claro (#3d9b84)            */
 }
 
+/* ── Dark theme (navy institucional Pantone 276 C) ──────────────────── */
+.dark {
+  --surface-bg:      13  12  25;   /* navy-dark  (#0d0c19)             */
+  --surface-card:    25  24  45;   /* navy medio                        */
+  --surface-overlay: 36  34  54;   /* Pantone 276 C exacto (#242236)   */
+  --surface-border:  52  50  76;   /* navy iluminado                    */
+  --surface-hover:   44  42  68;   /* navy hover                        */
+
+  --ink:       255 253 237;  /* crema UCIPS (#fffded)            */
+  --ink-soft:  226 190 150;  /* tan UCIPS (#e2be96)              */
+  --ink-muted: 178 178 177;  /* gris medio (#b2b2b1)             */
+  --ink-faint: 100 99  99;   /* gris apagado                     */
+
+  /* Acento institucional */
+  --accent:        231 155 66;   /* dorado Pantone 7563 C (#e79b42) */
+  --accent-crimson: 175 23  49;  /* carmesí vivo (#af1731)           */
+  --accent-teal:    61 155 132;  /* teal claro (#3d9b84)            */
+}
+
+/* ── Accent utilities via CSS vars ─────────────────────────────────── */
+.accent          { color: rgb(var(--accent)); }
+.bg-accent       { background-color: rgb(var(--accent)); }
+.border-accent   { border-color: rgb(var(--accent)); }
+.accent-crimson  { color: rgb(var(--accent-crimson)); }
+.bg-crimson      { background-color: rgb(var(--accent-crimson)); }
+.accent-teal     { color: rgb(var(--accent-teal)); }
+
+/* ── Base ───────────────────────────────────────────────────────────── */
 body {
   margin: 0;
   font-family: 'Inter', system-ui, sans-serif;
-  background-color: #0b0f1a;
-  color: #f1f5f9;
+  background-color: rgb(var(--surface-bg));
+  color: rgb(var(--ink));
+  transition: background-color 0.2s, color 0.2s;
 }
 
 #root { min-height: 100vh; }
 
+/* ── Scrollbar ──────────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #0b0f1a; }
-::-webkit-scrollbar-thumb { background: #1e2d45; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #c9a84c; }
+::-webkit-scrollbar-track  { background: rgb(var(--surface-overlay)); }
+::-webkit-scrollbar-thumb  { background: rgb(var(--surface-border)); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #e79b42; }
 
+/* ── Autofill ───────────────────────────────────────────────────────── */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus {
-  -webkit-text-fill-color: #f1f5f9;
-  -webkit-box-shadow: 0 0 0px 1000px #1a2235 inset;
+  -webkit-text-fill-color: rgb(var(--ink));
+  -webkit-box-shadow: 0 0 0px 1000px rgb(var(--surface-overlay)) inset;
   transition: background-color 5000s ease-in-out 0s;
 }

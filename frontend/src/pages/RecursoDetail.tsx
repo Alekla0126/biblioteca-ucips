@@ -64,7 +64,7 @@ export default function RecursoDetail() {
       <div className="min-h-screen bg-dark flex items-center justify-center">
         <div className="text-center">
           <p className="text-4xl mb-4">📭</p>
-          <p className="text-slate-400">Recurso no encontrado</p>
+          <p className="text-ink-muted">Recurso no encontrado</p>
           <Link to="/recursos" className="mt-4 inline-block text-ucips-gold hover:text-ucips-gold-light text-sm transition">
             ← Volver
           </Link>
@@ -79,13 +79,13 @@ export default function RecursoDetail() {
       <div className="bg-dark-surface border-b border-dark-border px-4 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-4 flex-1 min-w-0">
-            <Link to="/recursos" className="text-slate-500 hover:text-slate-300 transition text-sm flex-shrink-0">← Volver</Link>
+            <Link to="/recursos" className="text-ink-faint hover:text-ink-soft transition text-sm flex-shrink-0">← Volver</Link>
             <div className="min-w-0">
-              <h1 className="text-white font-bold truncate">{recurso.titulo}</h1>
-              <p className="text-slate-400 text-sm">{recurso.autor}{recurso.anio ? ` · ${recurso.anio}` : ""}</p>
+              <h1 className="text-ink font-bold truncate">{recurso.titulo}</h1>
+              <p className="text-ink-muted text-sm">{recurso.autor}{recurso.anio ? ` · ${recurso.anio}` : ""}</p>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 text-slate-500 text-sm flex-shrink-0">
+          <div className="flex items-center gap-1.5 text-ink-faint text-sm flex-shrink-0">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -100,12 +100,12 @@ export default function RecursoDetail() {
         <div className="bg-dark-elevated border-b border-dark-border py-2 px-4">
           <div className="max-w-7xl mx-auto flex items-center justify-center gap-3 flex-wrap">
             <button onClick={() => changePage(Math.max(1, currentPage - 1))} disabled={currentPage <= 1}
-              className="px-3 py-1.5 bg-dark-surface border border-dark-border text-slate-300 rounded-lg disabled:opacity-30 hover:border-slate-500 transition text-sm">
+              className="px-3 py-1.5 bg-dark-surface border border-dark-border text-ink-soft rounded-lg disabled:opacity-30 hover:border-dark-hover transition text-sm">
               ‹ Anterior
             </button>
-            <span className="text-slate-400 text-sm">Pág. {currentPage} / {numPages || "…"}</span>
+            <span className="text-ink-muted text-sm">Pág. {currentPage} / {numPages || "…"}</span>
             <button onClick={() => changePage(Math.min(numPages, currentPage + 1))} disabled={currentPage >= numPages}
-              className="px-3 py-1.5 bg-dark-surface border border-dark-border text-slate-300 rounded-lg disabled:opacity-30 hover:border-slate-500 transition text-sm">
+              className="px-3 py-1.5 bg-dark-surface border border-dark-border text-ink-soft rounded-lg disabled:opacity-30 hover:border-dark-hover transition text-sm">
               Siguiente ›
             </button>
             <a href={pdfUrl} download
@@ -132,12 +132,13 @@ export default function RecursoDetail() {
         ) : (
           <div className="flex flex-col items-center justify-center h-64 text-center">
             <div className="w-16 h-16 bg-dark-surface border border-dark-border rounded-2xl flex items-center justify-center mb-4">
-              <svg className="w-8 h-8 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              <svg className="w-8 h-8 text-ink-faint" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
-            <p className="text-slate-300 font-medium">PDF no disponible</p>
-            <p className="text-slate-500 text-sm mt-1">Este documento aún no ha sido cargado.</p>
+            <p className="text-ink-soft font-medium">PDF no disponible</p>
+            <p className="text-ink-faint text-sm mt-1">Este documento aún no ha sido cargado.</p>
           </div>
         )}
       </div>
@@ -145,8 +146,8 @@ export default function RecursoDetail() {
       {recurso.descripcion && (
         <div className="max-w-5xl mx-auto px-4 pb-10">
           <div className="bg-dark-surface border border-dark-border rounded-2xl p-6">
-            <h2 className="text-white font-bold mb-2 text-sm">Descripción</h2>
-            <p className="text-slate-400 text-sm leading-relaxed">{recurso.descripcion}</p>
+            <h2 className="text-ink font-bold mb-2 text-sm">Descripción</h2>
+            <p className="text-ink-muted text-sm leading-relaxed">{recurso.descripcion}</p>
           </div>
         </div>
       )}

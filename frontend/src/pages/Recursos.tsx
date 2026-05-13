@@ -42,10 +42,10 @@ export default function Recursos() {
       {/* Search header */}
       <div className="bg-dark-surface border-b border-dark-border py-8 px-4">
         <div className="max-w-3xl mx-auto">
-          <h1 className="text-2xl font-bold text-white mb-5 text-center">Explorar la biblioteca</h1>
+          <h1 className="text-2xl font-bold text-ink mb-5 text-center">Explorar la biblioteca</h1>
           <form onSubmit={handleSearch} className="flex gap-2">
             <div className="relative flex-1">
-              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faint" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <input
@@ -53,7 +53,7 @@ export default function Recursos() {
                 defaultValue={q}
                 type="search"
                 placeholder="Buscar por título o autor..."
-                className="w-full bg-dark-elevated border border-dark-border text-slate-200 placeholder-slate-500 pl-10 pr-4 py-3 rounded-xl outline-none focus:border-ucips-gold/50 focus:ring-1 focus:ring-ucips-gold/30 transition"
+                className="w-full bg-dark-elevated border border-dark-border text-ink placeholder-ink-faint pl-10 pr-4 py-3 rounded-xl outline-none focus:border-ucips-gold/50 focus:ring-1 focus:ring-ucips-gold/30 transition"
               />
             </div>
             <button type="submit"
@@ -74,12 +74,12 @@ export default function Recursos() {
         ) : !data?.items?.length ? (
           <div className="text-center py-24">
             <p className="text-5xl mb-4">🔍</p>
-            <p className="text-slate-400 text-lg">No se encontraron recursos</p>
-            {q && <p className="text-slate-600 text-sm mt-1">para "{q}"</p>}
+            <p className="text-ink-muted text-lg">No se encontraron recursos</p>
+            {q && <p className="text-ink-faint text-sm mt-1">para "{q}"</p>}
           </div>
         ) : (
           <>
-            <p className="text-sm text-slate-500 mb-5">{data.total} resultado{data.total !== 1 ? "s" : ""}</p>
+            <p className="text-sm text-ink-faint mb-5">{data.total} resultado{data.total !== 1 ? "s" : ""}</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {data.items.map((r: RecursoListItem) => <ResourceCard key={r.id_recurso} recurso={r} />)}
             </div>
@@ -92,7 +92,7 @@ export default function Recursos() {
                     className={`w-9 h-9 rounded-lg text-sm font-medium transition ${
                       p === page
                         ? "bg-ucips-gold text-ucips-navy font-bold"
-                        : "bg-dark-surface border border-dark-border text-slate-400 hover:border-ucips-gold/40 hover:text-white"
+                        : "bg-dark-surface border border-dark-border text-ink-muted hover:border-ucips-gold/40 hover:text-ink"
                     }`}
                   >
                     {p}

@@ -16,7 +16,7 @@ const ROLE_LABELS: Record<string, string> = {
 const ROLE_COLORS: Record<string, string> = {
   admin: "bg-purple-500/10 text-purple-400 border border-purple-500/20",
   profesor: "bg-blue-500/10 text-blue-400 border border-blue-500/20",
-  user: "bg-slate-700/30 text-slate-400 border border-slate-600/20",
+  user: "bg-dark-elevated text-ink-muted border border-dark-border",
 };
 
 export default function AdminDashboard() {
@@ -150,8 +150,8 @@ export default function AdminDashboard() {
 
   if (loading) return null;
 
-  const inputClass = "w-full bg-dark-elevated border border-dark-border text-slate-100 placeholder-slate-600 px-3 py-2.5 rounded-xl focus:outline-none focus:border-ucips-gold/50 focus:ring-1 focus:ring-ucips-gold/30 transition text-sm";
-  const thClass = "px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider";
+  const inputClass = "w-full bg-dark-elevated border border-dark-border text-ink placeholder-ink-faint px-3 py-2.5 rounded-xl focus:outline-none focus:border-ucips-gold/50 focus:ring-1 focus:ring-ucips-gold/30 transition text-sm";
+  const thClass = "px-4 py-3 text-left text-xs font-semibold text-ink-faint uppercase tracking-wider";
   const tdClass = "px-4 py-3";
 
   return (
@@ -159,8 +159,8 @@ export default function AdminDashboard() {
       <div className="bg-dark-surface border-b border-dark-border py-5 px-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-white">Panel de Administración</h1>
-            <p className="text-slate-500 text-xs mt-0.5">Biblioteca Virtual UCIPS</p>
+            <h1 className="text-xl font-bold text-ink">Panel de Administración</h1>
+            <p className="text-ink-faint text-xs mt-0.5">Biblioteca Virtual UCIPS</p>
           </div>
           <a href="/subir" className="bg-ucips-gold text-ucips-navy px-4 py-2 rounded-xl font-semibold text-sm hover:bg-ucips-gold-light transition">
             + Subir libro
@@ -174,7 +174,7 @@ export default function AdminDashboard() {
           {(["recursos", "categorias", "usuarios"] as Tab[]).map((t) => (
             <button key={t} onClick={() => setTab(t)}
               className={`px-5 py-4 text-sm font-medium border-b-2 transition ${
-                tab === t ? "border-ucips-gold text-ucips-gold" : "border-transparent text-slate-500 hover:text-slate-300"
+                tab === t ? "border-ucips-gold text-ucips-gold" : "border-transparent text-ink-faint hover:text-ink-soft"
               }`}>
               {t.charAt(0).toUpperCase() + t.slice(1)}
             </button>
@@ -187,14 +187,14 @@ export default function AdminDashboard() {
         {tab === "recursos" && (
           <div>
             <div className="flex justify-between items-center mb-5 flex-wrap gap-3">
-              <p className="text-slate-400 text-sm">{recursoTotal} recursos en total</p>
+              <p className="text-ink-muted text-sm">{recursoTotal} recursos en total</p>
               <div className="flex gap-2 flex-wrap">
                 <input type="search" placeholder="Buscar título o autor..." defaultValue={recursoQ}
                   onKeyDown={(e) => { if (e.key === "Enter") fetchRecursos(1, (e.target as HTMLInputElement).value); }}
                   onChange={(e) => { if (!e.target.value) fetchRecursos(1, ""); }}
-                  className="bg-dark-surface border border-dark-border text-slate-300 placeholder-slate-600 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-ucips-gold/40 w-52" />
+                  className="bg-dark-surface border border-dark-border text-ink placeholder-ink-faint px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-ucips-gold/40 w-52" />
                 <button onClick={handleGenerateThumbnails} disabled={generatingThumbs}
-                  className="bg-dark-surface border border-dark-border text-slate-300 px-3 py-2 rounded-lg text-sm hover:border-slate-500 disabled:opacity-40 transition">
+                  className="bg-dark-surface border border-dark-border text-ink-soft px-3 py-2 rounded-lg text-sm hover:border-dark-hover disabled:opacity-40 transition">
                   {generatingThumbs ? "Generando…" : "Generar portadas"}
                 </button>
               </div>
@@ -203,15 +203,23 @@ export default function AdminDashboard() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead className="border-b border-dark-border">
-                    <tr><th className={thClass}>ID</th><th className={thClass}>Título</th><th className={thClass}>Autor</th><th className={thClass}>Año</th><th className={thClass}>PDF</th><th className={thClass}>Portada</th><th className={thClass}></th></tr>
+                    <tr>
+                      <th className={thClass}>ID</th>
+                      <th className={thClass}>Título</th>
+                      <th className={thClass}>Autor</th>
+                      <th className={thClass}>Año</th>
+                      <th className={thClass}>PDF</th>
+                      <th className={thClass}>Portada</th>
+                      <th className={thClass}></th>
+                    </tr>
                   </thead>
                   <tbody className="divide-y divide-dark-border">
                     {recursos.map((r) => (
                       <tr key={r.id_recurso} className="hover:bg-dark-hover transition-colors">
-                        <td className={`${tdClass} text-slate-600 text-xs`}>{r.id_recurso}</td>
-                        <td className={`${tdClass} font-medium text-slate-200 max-w-xs truncate`}>{r.titulo}</td>
-                        <td className={`${tdClass} text-slate-400 max-w-xs truncate`}>{r.autor}</td>
-                        <td className={`${tdClass} text-slate-500`}>{r.anio || "—"}</td>
+                        <td className={`${tdClass} text-ink-faint text-xs`}>{r.id_recurso}</td>
+                        <td className={`${tdClass} font-medium text-ink-soft max-w-xs truncate`}>{r.titulo}</td>
+                        <td className={`${tdClass} text-ink-muted max-w-xs truncate`}>{r.autor}</td>
+                        <td className={`${tdClass} text-ink-faint`}>{r.anio || "—"}</td>
                         <td className={tdClass}>
                           <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${r.ruta_pdf ? "bg-green-500/10 text-green-400" : "bg-red-500/10 text-red-400"}`}>
                             {r.ruta_pdf ? "Sí" : "No"}
@@ -220,7 +228,7 @@ export default function AdminDashboard() {
                         <td className={tdClass}>
                           {r.ruta_portada
                             ? <img src={`/uploads/portadas/${r.ruta_portada}`} className="w-7 h-9 object-cover rounded" alt="" />
-                            : <span className="text-slate-700 text-xs">—</span>}
+                            : <span className="text-ink-faint text-xs">—</span>}
                         </td>
                         <td className={tdClass}>
                           <button onClick={() => handleDeleteRecurso(r.id_recurso)}
@@ -236,14 +244,14 @@ export default function AdminDashboard() {
             </div>
             {recursoTotal > PAGE_SIZE && (
               <div className="flex items-center justify-between mt-4">
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-ink-faint">
                   {(recursoPage - 1) * PAGE_SIZE + 1}–{Math.min(recursoPage * PAGE_SIZE, recursoTotal)} de {recursoTotal}
                 </p>
                 <div className="flex gap-2">
                   <button onClick={() => fetchRecursos(recursoPage - 1)} disabled={recursoPage <= 1}
-                    className="px-3 py-1.5 text-sm bg-dark-surface border border-dark-border text-slate-400 rounded-lg disabled:opacity-30 hover:border-slate-500 transition">← Anterior</button>
+                    className="px-3 py-1.5 text-sm bg-dark-surface border border-dark-border text-ink-muted rounded-lg disabled:opacity-30 hover:border-dark-hover transition">← Anterior</button>
                   <button onClick={() => fetchRecursos(recursoPage + 1)} disabled={recursoPage * PAGE_SIZE >= recursoTotal}
-                    className="px-3 py-1.5 text-sm bg-dark-surface border border-dark-border text-slate-400 rounded-lg disabled:opacity-30 hover:border-slate-500 transition">Siguiente →</button>
+                    className="px-3 py-1.5 text-sm bg-dark-surface border border-dark-border text-ink-muted rounded-lg disabled:opacity-30 hover:border-dark-hover transition">Siguiente →</button>
                 </div>
               </div>
             )}
@@ -254,14 +262,14 @@ export default function AdminDashboard() {
         {tab === "categorias" && (
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <h2 className="text-base font-bold text-white mb-4">Nueva categoría</h2>
+              <h2 className="text-base font-bold text-ink mb-4">Nueva categoría</h2>
               <form onSubmit={handleCreateCategoria} className="bg-dark-surface border border-dark-border rounded-xl p-6 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1.5">Nombre</label>
+                  <label className="block text-sm font-medium text-ink-soft mb-1.5">Nombre</label>
                   <input name="nombre" required placeholder="Ej: Derecho Penal" className={inputClass} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1.5">Icono (Font Awesome)</label>
+                  <label className="block text-sm font-medium text-ink-soft mb-1.5">Icono (Font Awesome)</label>
                   <input name="icono" placeholder="fa-book" required className={inputClass} />
                 </div>
                 <button type="submit" className="w-full bg-ucips-gold text-ucips-navy py-2.5 rounded-xl font-bold hover:bg-ucips-gold-light transition text-sm">
@@ -270,13 +278,13 @@ export default function AdminDashboard() {
               </form>
             </div>
             <div>
-              <h2 className="text-base font-bold text-white mb-4">Categorías ({categorias.length})</h2>
+              <h2 className="text-base font-bold text-ink mb-4">Categorías ({categorias.length})</h2>
               <div className="bg-dark-surface border border-dark-border rounded-xl divide-y divide-dark-border overflow-hidden">
                 {categorias.map((c) => (
                   <div key={c.id_categoria} className="flex items-center justify-between px-4 py-3 hover:bg-dark-hover transition-colors">
                     <div>
-                      <p className="font-medium text-slate-200 text-sm">{c.nombre}</p>
-                      <p className="text-xs text-slate-600">{c.total_recursos} recursos · {c.icono}</p>
+                      <p className="font-medium text-ink-soft text-sm">{c.nombre}</p>
+                      <p className="text-xs text-ink-faint">{c.total_recursos} recursos · {c.icono}</p>
                     </div>
                     <button onClick={() => handleDeleteCategoria(c.id_categoria)}
                       className="text-red-500 hover:text-red-400 text-xs font-medium transition">
@@ -292,18 +300,24 @@ export default function AdminDashboard() {
         {/* Usuarios Tab */}
         {tab === "usuarios" && (
           <div>
-            <h2 className="text-base font-bold text-white mb-4">Usuarios ({usuarios.length})</h2>
+            <h2 className="text-base font-bold text-ink mb-4">Usuarios ({usuarios.length})</h2>
             <div className="bg-dark-surface border border-dark-border rounded-xl overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead className="border-b border-dark-border">
-                    <tr><th className={thClass}>Nombre</th><th className={thClass}>Correo</th><th className={thClass}>Rol</th><th className={thClass}>Estado</th><th className={thClass}>Acciones</th></tr>
+                    <tr>
+                      <th className={thClass}>Nombre</th>
+                      <th className={thClass}>Correo</th>
+                      <th className={thClass}>Rol</th>
+                      <th className={thClass}>Estado</th>
+                      <th className={thClass}>Acciones</th>
+                    </tr>
                   </thead>
                   <tbody className="divide-y divide-dark-border">
                     {usuarios.map((u) => (
                       <tr key={u.uid} className="hover:bg-dark-hover transition-colors">
-                        <td className={`${tdClass} font-medium text-slate-200`}>{u.display_name ?? "—"}</td>
-                        <td className={`${tdClass} text-slate-400`}>{u.email}</td>
+                        <td className={`${tdClass} font-medium text-ink-soft`}>{u.display_name ?? "—"}</td>
+                        <td className={`${tdClass} text-ink-muted`}>{u.email}</td>
                         <td className={tdClass}>
                           <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${ROLE_COLORS[u.role]}`}>
                             {ROLE_LABELS[u.role]}
@@ -318,7 +332,7 @@ export default function AdminDashboard() {
                           {u.role !== "admin" && (
                             <div className="flex gap-2 items-center">
                               <select value={u.role} onChange={(e) => handleRoleChange(u.uid, e.target.value)}
-                                className="text-xs bg-dark-elevated border border-dark-border text-slate-300 rounded-lg px-2 py-1 outline-none focus:border-ucips-gold/40">
+                                className="text-xs bg-dark-elevated border border-dark-border text-ink-soft rounded-lg px-2 py-1 outline-none focus:border-ucips-gold/40">
                                 <option value="user">Usuario</option>
                                 <option value="profesor">Profesor</option>
                               </select>

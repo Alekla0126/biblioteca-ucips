@@ -33,15 +33,15 @@ export default function Subir() {
     }
   };
 
-  const labelClass = "block text-sm font-medium text-slate-300 mb-1.5";
-  const inputClass = "w-full bg-dark-elevated border border-dark-border text-slate-100 placeholder-slate-600 px-4 py-3 rounded-xl focus:outline-none focus:border-ucips-gold/50 focus:ring-1 focus:ring-ucips-gold/30 transition";
+  const labelClass = "block text-sm font-medium text-ink-soft mb-1.5";
+  const inputClass = "w-full bg-dark-elevated border border-dark-border text-ink placeholder-ink-faint px-4 py-3 rounded-xl focus:outline-none focus:border-ucips-gold/50 focus:ring-1 focus:ring-ucips-gold/30 transition";
 
   return (
     <div className="min-h-screen bg-dark py-10 px-4">
       <div className="max-w-2xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white">Subir recurso</h1>
-          <p className="text-slate-400 text-sm mt-1">
+          <h1 className="text-2xl font-bold text-ink">Subir recurso</h1>
+          <p className="text-ink-muted text-sm mt-1">
             La portada se genera automáticamente del PDF si no subes una imagen.
           </p>
         </div>
@@ -63,7 +63,7 @@ export default function Subir() {
               <input name="anio" required maxLength={4} placeholder="2024" className={inputClass} />
             </div>
             <div className="sm:col-span-2">
-              <label className={labelClass}>Descripción <span className="text-slate-500 font-normal">(opcional)</span></label>
+              <label className={labelClass}>Descripción <span className="text-ink-faint font-normal">(opcional)</span></label>
               <textarea name="descripcion" rows={3} placeholder="Breve descripción del contenido..."
                 className={`${inputClass} resize-none`} />
             </div>
@@ -93,10 +93,10 @@ export default function Subir() {
                 </div>
               ) : (
                 <div className="text-center">
-                  <svg className="w-6 h-6 text-slate-500 mx-auto mb-1 group-hover:text-ucips-gold transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 text-ink-faint mx-auto mb-1 group-hover:text-ucips-gold transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                   </svg>
-                  <p className="text-sm text-slate-500 group-hover:text-slate-300 transition">Haz clic para seleccionar el PDF</p>
+                  <p className="text-sm text-ink-faint group-hover:text-ink-soft transition">Haz clic para seleccionar el PDF</p>
                 </div>
               )}
             </label>
@@ -105,7 +105,7 @@ export default function Subir() {
           {/* Cover upload */}
           <div>
             <label className={labelClass}>
-              Portada <span className="text-slate-500 font-normal">(opcional — se genera del PDF automáticamente)</span>
+              Portada <span className="text-ink-faint font-normal">(opcional — se genera del PDF automáticamente)</span>
             </label>
             <label className="flex flex-col items-center justify-center w-full h-20 border-2 border-dashed border-dark-border rounded-xl cursor-pointer hover:border-ucips-gold/40 hover:bg-dark-elevated transition group">
               <input name="portada_file" type="file" accept="image/png,image/jpeg,image/webp" className="hidden"
@@ -113,7 +113,7 @@ export default function Subir() {
               {portadaName ? (
                 <p className="text-sm text-ucips-gold font-medium">{portadaName}</p>
               ) : (
-                <p className="text-sm text-slate-600 group-hover:text-slate-400 transition">Imagen de portada (JPG, PNG, WebP)</p>
+                <p className="text-sm text-ink-faint group-hover:text-ink-soft transition">Imagen de portada (JPG, PNG, WebP)</p>
               )}
             </label>
           </div>

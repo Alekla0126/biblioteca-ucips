@@ -33,21 +33,29 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-dark">
 
-      {/* Hero */}
-      <section className="relative overflow-hidden py-24 px-4">
-        <div className="absolute inset-0 bg-gradient-to-br from-ucips-navy via-dark to-dark" />
-        <div className="absolute inset-0 opacity-20"
-          style={{ backgroundImage: "radial-gradient(circle at 20% 50%, #1a4a7a 0%, transparent 50%), radial-gradient(circle at 80% 20%, #c9a84c22 0%, transparent 40%)" }} />
+      {/* ── Hero — navy institucional Pantone 276 C ── */}
+      <section className="relative overflow-hidden py-24 px-4" style={{ backgroundColor: "#242236" }}>
+        {/* Gradientes institucionales: dorado + carmesí */}
+        <div className="absolute inset-0 opacity-30" style={{
+          backgroundImage:
+            "radial-gradient(ellipse at 15% 60%, #5f1b2d 0%, transparent 45%)," +
+            "radial-gradient(ellipse at 85% 20%, #e79b4233 0%, transparent 45%)," +
+            "radial-gradient(ellipse at 50% 100%, #0c312d55 0%, transparent 50%)",
+        }} />
+
+        {/* Línea de acento carmesí en la parte inferior del hero */}
+        <div className="absolute bottom-0 left-0 right-0 h-1" style={{ background: "linear-gradient(90deg, #5f1b2d, #e79b42, #246257)" }} />
+
         <div className="relative max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-dark-elevated border border-dark-border px-4 py-1.5 rounded-full text-sm text-slate-400 mb-6">
-            <span className="w-2 h-2 bg-ucips-gold rounded-full animate-pulse" />
+          <div className="inline-flex items-center gap-2 bg-white/10 border border-ucips-gold/30 px-4 py-1.5 rounded-full text-sm mb-6" style={{ color: "#e2be96" }}>
+            <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: "#e79b42" }} />
             {totalRecursos} recursos disponibles
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold mb-5 leading-tight">
+          <h1 className="text-5xl md:text-6xl font-bold mb-5 leading-tight text-white">
             Biblioteca Virtual<br />
             <span className="text-ucips-gold">UCIPS</span>
           </h1>
-          <p className="text-slate-400 text-lg mb-10 max-w-xl mx-auto">
+          <p className="text-lg mb-10 max-w-xl mx-auto" style={{ color: "#e2be96" }}>
             Recursos académicos en ciencias policiales, seguridad pública y derecho — acceso libre las 24 horas.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -56,15 +64,15 @@ export default function Home() {
               Explorar recursos
             </Link>
             <Link to="/register"
-              className="bg-dark-elevated border border-dark-border text-slate-300 px-8 py-3.5 rounded-xl font-medium text-base hover:border-ucips-gold/50 hover:text-white transition">
+              className="bg-white/10 border border-white/20 text-white px-8 py-3.5 rounded-xl font-medium text-base hover:bg-white/20 transition">
               Crear cuenta
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Stats bar */}
-      <section className="border-y border-dark-border bg-dark-surface">
+      {/* ── Stats bar — carmesí institucional ── */}
+      <section style={{ backgroundColor: "#861e34" }}>
         <div className="max-w-4xl mx-auto px-4 py-5 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           {[
             { val: totalRecursos, label: "Recursos" },
@@ -74,15 +82,18 @@ export default function Home() {
           ].map(({ val, label }) => (
             <div key={label}>
               <p className="text-2xl font-bold text-ucips-gold">{val}</p>
-              <p className="text-xs text-slate-500 mt-0.5">{label}</p>
+              <p className="text-xs mt-0.5" style={{ color: "#e2be96" }}>{label}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Categories */}
+      {/* ── Categorías ── */}
       <section className="max-w-7xl mx-auto px-4 py-14">
-        <h2 className="text-xl font-bold text-slate-200 mb-6">Explorar por categoría</h2>
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-1 h-6 rounded-full bg-ucips-gold" />
+          <h2 className="text-xl font-bold text-ink">Explorar por categoría</h2>
+        </div>
         {loading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
             {Array.from({ length: 12 }).map((_, i) => (
@@ -93,23 +104,26 @@ export default function Home() {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
             {categorias.map((cat) => (
               <Link key={cat.id_categoria} to={`/recursos?categoria=${cat.id_categoria}`}
-                className="bg-dark-surface border border-dark-border rounded-xl p-4 text-center hover:border-ucips-gold/40 hover:bg-dark-hover hover:-translate-y-1 transition-all group">
+                className="bg-dark-surface border border-dark-border rounded-xl p-4 text-center hover:border-ucips-gold/50 hover:bg-dark-hover hover:-translate-y-1 transition-all group">
                 <div className="text-2xl mb-2">{iconEmoji(cat.icono)}</div>
-                <p className="text-xs font-semibold text-slate-300 group-hover:text-ucips-gold leading-tight transition-colors">
+                <p className="text-xs font-semibold text-ink-soft group-hover:text-ucips-gold leading-tight transition-colors">
                   {cat.nombre}
                 </p>
-                <p className="text-[11px] text-slate-600 mt-1">{cat.total_recursos}</p>
+                <p className="text-[11px] text-ink-faint mt-1">{cat.total_recursos}</p>
               </Link>
             ))}
           </div>
         )}
       </section>
 
-      {/* Recent */}
+      {/* ── Recientes ── */}
       <section className="max-w-7xl mx-auto px-4 pb-16">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-slate-200">Agregados recientemente</h2>
-          <Link to="/recursos" className="text-sm text-ucips-gold hover:text-ucips-gold-light transition">
+          <div className="flex items-center gap-3">
+            <div className="w-1 h-6 rounded-full" style={{ backgroundColor: "#861e34" }} />
+            <h2 className="text-xl font-bold text-ink">Agregados recientemente</h2>
+          </div>
+          <Link to="/recursos" className="text-sm text-ucips-gold hover:text-ucips-gold-light transition font-medium">
             Ver todos →
           </Link>
         </div>

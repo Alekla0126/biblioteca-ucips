@@ -37,7 +37,7 @@ export default function Register() {
     }
   };
 
-  const inputClass = "w-full bg-dark-elevated border border-dark-border text-slate-100 placeholder-slate-600 px-4 py-3 rounded-xl focus:outline-none focus:border-ucips-gold/50 focus:ring-1 focus:ring-ucips-gold/30 transition";
+  const inputClass = "w-full bg-dark-elevated border border-dark-border text-ink placeholder-ink-faint px-4 py-3 rounded-xl focus:outline-none focus:border-ucips-gold/50 focus:ring-1 focus:ring-ucips-gold/30 transition";
 
   return (
     <div className="min-h-screen bg-dark flex items-center justify-center px-4 py-10">
@@ -45,11 +45,12 @@ export default function Register() {
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 bg-ucips-gold/10 border border-ucips-gold/30 rounded-2xl mb-4">
             <svg className="w-7 h-7 text-ucips-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-white">Crear cuenta</h1>
-          <p className="text-slate-400 mt-1 text-sm">Únete a la Biblioteca UCIPS</p>
+          <h1 className="text-2xl font-bold text-ink">Crear cuenta</h1>
+          <p className="text-ink-muted mt-1 text-sm">Únete a la Biblioteca UCIPS</p>
         </div>
 
         <div className="bg-dark-surface border border-dark-border rounded-2xl p-8 shadow-dark-lg">
@@ -61,7 +62,7 @@ export default function Register() {
               { name: "confirm" as const, label: "Confirmar contraseña", type: "password", placeholder: "Repite tu contraseña", autocomplete: "new-password" },
             ].map(({ name, label, type, placeholder, autocomplete }) => (
               <div key={name}>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">{label}</label>
+                <label className="block text-sm font-medium text-ink-soft mb-1.5">{label}</label>
                 <input {...register(name)} type={type} autoComplete={autocomplete} placeholder={placeholder} className={inputClass} />
                 {errors[name] && <p className="mt-1.5 text-xs text-red-400">{errors[name]?.message}</p>}
               </div>
@@ -71,7 +72,7 @@ export default function Register() {
               {loading ? "Creando cuenta..." : "Crear cuenta"}
             </button>
           </form>
-          <p className="mt-6 text-center text-sm text-slate-500">
+          <p className="mt-6 text-center text-sm text-ink-faint">
             ¿Ya tienes cuenta?{" "}
             <Link to="/login" className="text-ucips-gold hover:text-ucips-gold-light font-medium transition">
               Iniciar sesión
