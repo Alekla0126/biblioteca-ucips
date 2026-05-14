@@ -13,9 +13,9 @@ ALLOWED_PDF_MIME = {"application/pdf"}
 ALLOWED_IMAGE_MIME = {"image/jpeg", "image/png", "image/webp"}
 MAX_BYTES = settings.MAX_FILE_SIZE_MB * 1024 * 1024
 
-# New uploads: UUID hex + extension. Legacy imports: libro_TIMESTAMP_RANDOM.pdf
+# New uploads: UUID hex + extension. Legacy: libro_TIMESTAMP_N.pdf or portada_UUID.png / portada_TIMESTAMP_N.png
 _SAFE_FILENAME_RE = re.compile(
-    r"^([a-f0-9]{32}\.(pdf|jpg|png|webp)|libro_\d+_\d+\.pdf|portada_\d+_\d+\.png)$"
+    r"^([a-f0-9]{32}\.(pdf|jpg|png|webp)|portada_[a-f0-9]{32}\.png|libro_\d+_\d+\.pdf|portada_\d+_\d+\.png)$"
 )
 
 
