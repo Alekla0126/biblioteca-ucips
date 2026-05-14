@@ -1,7 +1,7 @@
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from fastapi.responses import RedirectResponse
+from fastapi.responses import Response as RawResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -14,7 +14,7 @@ from app.core.database import engine, Base
 from app.core.limiter import limiter
 from app.api.v1.router import api_router
 from app.models import user, categoria, recurso  # noqa: F401
-from app.services.storage import ensure_bucket_public
+from app.services.storage import ensure_bucket_public, download_file
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -81,13 +81,21 @@ async def health():
     return {"status": "ok", "version": "2.0.0"}
 
 
+_MIME_FOR_EXT = {".png": "image/png", ".jpg": "image/jpeg", ".webp": "image/webp"}
+
 @app.get("/uploads/{subfolder}/{filename}")
 async def serve_upload(subfolder: str, filename: str):
-    """Redirect image requests to the public S3 bucket URL."""
-    return RedirectResponse(
-        url=f"{settings.s3_public_base}/{subfolder}/{filename}",
-        status_code=302,
-    )
+    """Stream images from S3 — avoids needing a public bucket."""
+    try:
+        data = await download_file(subfolder, filename)
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=404, detail="Archivo no encontrado")
+    ext = "." + filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+    content_type = _MIME_FOR_EXT.get(ext, "application/octet-stream")
+    return RawResponse(content=data, media_type=content_type,
+                       headers={"Cache-Control": "public, max-age=86400"})
 
 
 app.include_router(api_router)
